@@ -15,7 +15,7 @@ public class Business {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String description;
 
     @Column(nullable = false)
@@ -26,14 +26,12 @@ public class Business {
     private User user;
 
     @OneToMany(mappedBy="business", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Professional> professionalsList = new ArrayList<>();
-
-    @OneToMany(mappedBy="business", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JobOffer> jobOffersList = new ArrayList<>();
 
     public Business() {
     }
-    public Business(String name, String description, String recruitmentServiceContact, User user) {
+    public Business(String name, String description, String recruitmentServiceContact, User user
+    ) {
         this.name = name;
         this.description = description;
         this.recruitmentServiceContact = recruitmentServiceContact;
@@ -81,14 +79,6 @@ public class Business {
         this.user = user;
     }
 
-    public List<Professional> getProfessionals(){
-        return professionalsList;
-    }
-
-    public void setProfessionals(List<Professional> professionalsList){
-        this.professionalsList = professionalsList;
-    }
-
     public List<JobOffer> getJobOffersList(){
         return jobOffersList;
     }
@@ -96,5 +86,16 @@ public class Business {
     public void setJobOffersList(List<JobOffer> jobOffersList){
         this.jobOffersList = jobOffersList;
     }
+
+    public void addJobOffer(JobOffer jobOffer) {
+        jobOffersList.add(jobOffer);
+        jobOffer.setBusiness(this);
+    }
+
+    public void removeJobOffer(JobOffer jobOffer) {
+        jobOffersList.remove(jobOffer);
+        jobOffer.setBusiness(null);
+    }
+
 }
 

@@ -10,6 +10,7 @@ Application de gestion de prospects, pensée pour accompagner les demandeurs d�
 - Cloner le dépôt
 - Lancer la base de données PostgreSQL avec Docker Compose (voir docker-compose.yml)
 - Configurer les paramètres dans 'application.properties'
+- Penser à changer les secrets JWT en production 
 
 ## Dépendance du projet 
 

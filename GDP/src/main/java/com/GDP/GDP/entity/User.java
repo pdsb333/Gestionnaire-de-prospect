@@ -2,6 +2,8 @@ package com.GDP.GDP.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
 
 import jakarta.persistence.*;
 
@@ -10,8 +12,8 @@ import jakarta.persistence.*;
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String pseudo;
@@ -22,25 +24,33 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Business> businesses = new ArrayList<>();
 
     public User() {
     }
 
-    public User(String pseudo, String email, String password) {
+    public User(String pseudo, String email, String password, Role role) {
         this.pseudo = pseudo;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
+    public enum Role{
+        ROLE_USER,
+        ROLE_ADMIN
+    }
     // Getters and Setters
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -66,6 +76,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public List<Business> getBusinesses() {

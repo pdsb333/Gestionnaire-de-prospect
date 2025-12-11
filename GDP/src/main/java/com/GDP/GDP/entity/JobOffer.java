@@ -1,6 +1,14 @@
 package com.GDP.GDP.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "job_offers")
@@ -15,6 +23,9 @@ public class JobOffer {
     @Column(nullable=false)
     private String link;
 
+    @Column(nullable=false)
+    private Integer relaunchFrequency;
+
     @ManyToOne
     @JoinColumn(name="business_id", nullable=false)
     private Business business;
@@ -24,9 +35,10 @@ public class JobOffer {
 
     public JobOffer(){
     }
-    public JobOffer(String name, String link, Business business) {
+    public JobOffer(String name, String link, Integer relaunchFrequency ,Business business) {
         this.name = name;
         this.link = link;
+        this.relaunchFrequency = relaunchFrequency;
         this.business = business;
     }
 
@@ -53,6 +65,14 @@ public class JobOffer {
 
     public void setLink(String link){
         this.link = link;
+    }
+
+    public Integer getRelaunchFrequency(){
+        return this.relaunchFrequency;
+    }
+
+    public void setRelaunchFrequency(Integer relaunchFrequency){
+        this.relaunchFrequency = relaunchFrequency;
     }
 
     public Business getBusiness(){

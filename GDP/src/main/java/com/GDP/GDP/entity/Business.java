@@ -100,12 +100,24 @@ public class Business {
         this.professionalsList = professionalsList;
     }
 
+    //test utilitary
+    public void addProfessional(Professional professional) {
+        professionalsList.add(professional);
+        professional.setBusiness(this);
+    }
+
     public List<JobOffer> getJobOffersList(){
         return jobOffersList;
     }
 
     public void setJobOffersList(List<JobOffer> jobOffersList){
         this.jobOffersList = jobOffersList;
+    }
+
+    //test utilitary
+    public void addJobOffer(JobOffer jobOffer) {
+        jobOffersList.add(jobOffer);
+        jobOffer.setBusiness(this);
     }
 }
 

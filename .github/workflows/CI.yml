@@ -24,4 +24,10 @@ jobs:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('GDP/**/pom.xml') }}
     - name: Test avec Maven
-      run: mvn test -f GDP/pom.xml
+      run: mvn test -f GDP/pom.xml -B --no-transfer-progress
+    - name: Publish Test Report
+      uses: scacap/action-surefire-report@v1     
+      with:
+        test_result_path: GDP/target/surefire-reports/TEST-*.xml 
+        report_title: Tests unitaires GDP        
+

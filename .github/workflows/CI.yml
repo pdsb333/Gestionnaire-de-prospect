@@ -31,10 +31,12 @@ jobs:
     - name: Test avec Maven
       run: mvn test -f GDP/pom.xml -B --no-transfer-progress
     
-    - name: Publish Test Report  
-      if: success() || failure()    
-      uses: scacap/action-surefire-report@v1
+    - name: Publish Test Report  # ← NOUVEAU !
+      uses: dorny/test-reporter@v1
+      continue-on-error: true
+      if: success() || failure()
       with:
-        report_paths: GDP/target/surefire-reports/TEST-*.xml 
-        check_name: Tests Spring Boot GDP                    
-        github_token: ${{ secrets.GITHUB_TOKEN }}            
+        name: "Tests Spring Boot GDP"
+        path: "GDP/target/surefire-reports/TEST-*.xml"
+        reporter: "java-junit"
+        fail-on-error: false          

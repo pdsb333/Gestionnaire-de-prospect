@@ -1,33 +1,40 @@
 name: CI
-
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
+permissions:  # ← AJOUT OBLIGATOIRE !
+  checks: write
+  contents: read
+
 jobs:
   test:
-
     runs-on: ubuntu-latest
-
+    
     steps:
     - uses: actions/checkout@v4
+    
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
+    
     - name: Cache Maven
       uses: actions/cache@v4
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('GDP/**/pom.xml') }}
+    
     - name: Test avec Maven
       run: mvn test -f GDP/pom.xml -B --no-transfer-progress
-    - name: Publish Test Report
-      uses: scacap/action-surefire-report@v1     
+    
+    - name: Publish Test Report  
+      if: success() || failure()    
+      uses: scacap/action-surefire-report@v1
       with:
-        test_result_path: GDP/target/surefire-reports/TEST-*.xml 
-        report_title: Tests unitaires GDP        
-
+        report_paths: GDP/target/surefire-reports/TEST-*.xml 
+        check_name: Tests Spring Boot GDP                    
+        github_token: ${{ secrets.GITHUB_TOKEN }}            

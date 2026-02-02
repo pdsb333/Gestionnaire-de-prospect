@@ -1,6 +1,7 @@
 package com.GDP.GDP.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,6 +23,7 @@ import com.GDP.GDP.entity.Business;
 import com.GDP.GDP.entity.JobOffer;
 import com.GDP.GDP.entity.Professional;
 import com.GDP.GDP.entity.User;
+import com.GDP.GDP.exception.ResourceNotFoundException;
 import com.GDP.GDP.exception.business.BusinessAlreadyExistsException;
 import com.GDP.GDP.repository.BusinessRepository;
 import com.GDP.GDP.service.business.BusinessServiceImpl;
@@ -219,4 +221,126 @@ class BusinessServiceTest {
             assertThat(result.getDescription()).isNull();
         }
     }
+
+    /* ---------------------------------------------------------
+        TESTS UPDATE BUSINESS
+     --------------------------------------------------------- */
+
+    @Nested
+    @DisplayName("updateBusiness()")
+    class UpdateBusinessTests {
+
+        @Test
+        @DisplayName("Should update business with same name")
+        void shouldUpdateBusinessWithSameName() {
+            // Arrange
+            Business existing = createBusiness("Entreprise A", "Old Description", "Old Contact", currentUser);
+            BusinessRequest request = createBusinessRequest("Entreprise A", "New Description", "New Contact");
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.of(existing));
+            when(businessRepository.save(any(Business.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // Act
+            BusinessResponse result = businessService.updateBusiness(currentUser, 1L, request);
+
+            // Assert
+            assertThat(result.getName()).isEqualTo("Entreprise A");
+            assertThat(result.getDescription()).isEqualTo("New Description");
+            assertThat(result.getRecruitmentServiceContact()).isEqualTo("New Contact");
+        }
+
+        @Test
+        @DisplayName("Should update business with new unique name")
+        void shouldUpdateBusinessWithNewUniqueName() {
+            // Arrange
+            Business existing = createBusiness("Entreprise A", "Description", "Contact", currentUser);
+            BusinessRequest request = createBusinessRequest("Entreprise B", "Description", "Contact");
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.of(existing));
+            when(businessRepository.existsByNameAndUser_Id("Entreprise B", userId)).thenReturn(false);
+            when(businessRepository.save(any(Business.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // Act
+            BusinessResponse result = businessService.updateBusiness(currentUser, 1L, request);
+
+            // Assert
+            assertThat(result.getName()).isEqualTo("Entreprise B");
+        }
+
+        @Test
+        @DisplayName("Should throw BusinessAlreadyExistsException when new name already exists")
+        void shouldThrowExceptionWhenNewNameExists() {
+            // Arrange
+            Business existing = createBusiness("Entreprise A", "Description", "Contact", currentUser);
+            BusinessRequest request = createBusinessRequest("Entreprise B", "Description", "Contact");
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.of(existing));
+            when(businessRepository.existsByNameAndUser_Id("Entreprise B", userId)).thenReturn(true);
+
+            // Act & Assert
+            assertThatThrownBy(() -> businessService.updateBusiness(currentUser, 1L, request))
+                .isInstanceOf(BusinessAlreadyExistsException.class);
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when business not found")
+        void shouldThrowExceptionWhenBusinessNotFound() {
+            // Arrange
+            BusinessRequest request = createBusinessRequest("Entreprise A", "Description", "Contact");
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> businessService.updateBusiness(currentUser, 1L, request))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("1");
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when business belongs to another user")
+        void shouldThrowExceptionWhenBusinessBelongsToAnotherUser() {
+            // Arrange
+            BusinessRequest request = createBusinessRequest("Entreprise A", "Description", "Contact");
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> businessService.updateBusiness(currentUser, 1L, request))
+                .isInstanceOf(ResourceNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("Should trim business name before update")
+        void shouldTrimBusinessNameBeforeUpdate() {
+            // Arrange
+            Business existing = createBusiness("Entreprise A", "Description", "Contact", currentUser);
+            BusinessRequest request = createBusinessRequest("  Entreprise B  ", "Description", "Contact");
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.of(existing));
+            when(businessRepository.existsByNameAndUser_Id("Entreprise B", userId)).thenReturn(false);
+            when(businessRepository.save(any(Business.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // Act
+            BusinessResponse result = businessService.updateBusiness(currentUser, 1L, request);
+
+            // Assert
+            assertThat(result.getName()).isEqualTo("Entreprise B");
+        }
+
+        @Test
+        @DisplayName("Should update all fields even when name unchanged")
+        void shouldUpdateAllFieldsWhenNameUnchanged() {
+            // Arrange
+            Business existing = createBusiness("Entreprise A", "Old Desc", "Old Contact", currentUser);
+            BusinessRequest request = createBusinessRequest("Entreprise A", "New Desc", "New Contact");
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.of(existing));
+            when(businessRepository.save(any(Business.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // Act
+            BusinessResponse result = businessService.updateBusiness(currentUser, 1L, request);
+
+            // Assert
+            assertThat(result.getDescription()).isEqualTo("New Desc");
+            assertThat(result.getRecruitmentServiceContact()).isEqualTo("New Contact");
+        }
+    }
+
 }

@@ -9,6 +9,6 @@ import com.GDP.GDP.entity.User;
 public interface BusinessService {
     BusinessResponse create(User user, BusinessRequest request);
     List<BusinessResponse> getBusinessByUserId(User user);
-    //BusinessResponse updateBusiness(User user, @NotNull Long id, @Valid BusinessRequest request);
+    BusinessResponse updateBusiness(User user, Long id, BusinessRequest request);
     //void deleteBusiness(User user, @NotNull Long id);
 }

@@ -9,6 +9,7 @@ import com.GDP.GDP.dto.business.BusinessRequest;
 import com.GDP.GDP.dto.business.BusinessResponse;
 import com.GDP.GDP.entity.Business;
 import com.GDP.GDP.entity.User;
+import com.GDP.GDP.exception.ResourceNotFoundException;
 import com.GDP.GDP.exception.business.BusinessAlreadyExistsException;
 import com.GDP.GDP.repository.BusinessRepository;
 
@@ -60,4 +61,21 @@ public class BusinessServiceImpl implements BusinessService {
             businessRepository.save(business)
         );
     }
+
+    @Override
+    public BusinessResponse updateBusiness(User user, Long id, BusinessRequest request){
+        String normalized = normalizeBusinessName(request.getName());
+
+        Business business = businessRepository.findByIdAndUserId(id, user.getId())
+                    .orElseThrow(()-> new ResourceNotFoundException("Business", id));
+
+        if (!business.getName().equals(normalized)) {
+            assertBusinessNameNotExists(user, normalized);
+            business.setName(normalized);
+        }
+        business.setDescription(request.getDescription()); 
+        business.setRecruitmentServiceContact(request.getRecruitmentServiceContact());
+        return BusinessResponse.fromEntity(businessRepository.save(business));
+        
+    }    
 }

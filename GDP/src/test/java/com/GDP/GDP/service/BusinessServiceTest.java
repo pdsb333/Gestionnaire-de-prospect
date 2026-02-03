@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -343,4 +344,63 @@ class BusinessServiceTest {
         }
     }
 
+
+    /* ---------------------------------------------------------
+        TESTS DELETE BUSINESS
+     --------------------------------------------------------- */
+
+    @Nested
+    @DisplayName("deleteBusiness()")
+    class DeleteBusinessTests {
+
+        @Test
+        @DisplayName("Should delete existing business owned by user")
+        void shouldDeleteExistingBusinessOwnedByUser() {
+            // Arrange
+            Business business = createBusiness("Entreprise A", "Description", "Contact", currentUser);
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.of(business));
+
+            // Act
+            businessService.deleteBusiness(currentUser, 1L);
+
+            // Assert
+            verify(businessRepository).findByIdAndUserId(1L, userId);
+            verify(businessRepository).delete(business);
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when business not found")
+        void shouldThrowExceptionWhenBusinessNotFound() {
+            // Arrange
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> businessService.deleteBusiness(currentUser, 1L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("1");
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when business owned by another user")
+        void shouldThrowExceptionWhenBusinessOwnedByAnotherUser() {
+            // Arrange
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> businessService.deleteBusiness(currentUser, 1L))
+                .isInstanceOf(ResourceNotFoundException.class);
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException for non-existing business id")
+        void shouldThrowExceptionForNonExistingBusinessId() {
+            // Arrange
+            when(businessRepository.findByIdAndUserId(999L, userId)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThatThrownBy(() -> businessService.deleteBusiness(currentUser, 999L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("999");
+        }
+    }
 }

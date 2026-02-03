@@ -10,5 +10,5 @@ public interface BusinessService {
     BusinessResponse create(User user, BusinessRequest request);
     List<BusinessResponse> getBusinessByUserId(User user);
     BusinessResponse updateBusiness(User user, Long id, BusinessRequest request);
-    //void deleteBusiness(User user, @NotNull Long id);
+    void deleteBusiness(User user, Long id);
 }

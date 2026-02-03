@@ -77,5 +77,13 @@ public class BusinessServiceImpl implements BusinessService {
         business.setRecruitmentServiceContact(request.getRecruitmentServiceContact());
         return BusinessResponse.fromEntity(businessRepository.save(business));
         
-    }    
+    }
+
+    @Override
+    public void deleteBusiness(User user, Long id){
+        Business business = businessRepository.findByIdAndUserId(id, user.getId())
+                    .orElseThrow(()-> new ResourceNotFoundException("Business", id));
+
+        businessRepository.delete(business);
+    }
 }

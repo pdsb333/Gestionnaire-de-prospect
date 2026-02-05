@@ -6,48 +6,39 @@ import com.GDP.GDP.dto.joboffer.JobOfferResponse;
 import com.GDP.GDP.dto.professional.ProfessionalResponse;
 import com.GDP.GDP.entity.Business;
 
-public class BusinessResponse {
-    private Long id;
-    private String name;
-    private String description;
-    private String recruitmentServiceContact;
-    private List<JobOfferResponse> jobOffersList;
-    private List<ProfessionalResponse> professionalsList;
+public record BusinessResponse(
+    Long id,
+    String name,
+    String description,
+    String recruitmentServiceContact,
+    List<JobOfferResponse> jobOffersList,
+    List<ProfessionalResponse> professionalsList
+) {
 
-    public static BusinessResponse fromEntity(Business business){
-        BusinessResponse dto = new BusinessResponse();
-        dto.id = business.getId();
-        dto.name = business.getName();
-        dto.description = business.getDescription();
-        dto.recruitmentServiceContact = business.getRecruitmentServiceContact();
-        dto.jobOffersList = business.getJobOffersList().stream()
-            .map(JobOfferResponse::fromEntity)
-            .toList();
-        dto.professionalsList = business.getProfessionals().stream()
-            .map(ProfessionalResponse::fromEntity)
-            .toList();
-        return dto;
-    }
+    public static BusinessResponse fromEntity(Business business) {
+        List<JobOfferResponse> jobOffers =
+            business.getJobOffersList() == null
+                ? List.of()
+                : business.getJobOffersList()
+                    .stream()
+                    .map(JobOfferResponse::fromEntity)
+                    .toList();
 
-    public Long getId(){
-        return this.id;
-    }
+        List<ProfessionalResponse> professionals =
+            business.getProfessionals() == null
+                ? List.of()
+                : business.getProfessionals()
+                    .stream()
+                    .map(ProfessionalResponse::fromEntity)
+                    .toList();
 
-    public String getName(){
-        return this.name;
-    }
-    public String getDescription(){
-        return this.description;
-    }
-
-    public String getRecruitmentServiceContact(){
-        return this.recruitmentServiceContact;
-    }
-    public List<JobOfferResponse> getJobOffersList(){
-        return this.jobOffersList;
-    }
-
-    public List<ProfessionalResponse> getProfessionalsList(){
-        return this.professionalsList;
+        return new BusinessResponse(
+            business.getId(),
+            business.getName(),
+            business.getDescription(),
+            business.getRecruitmentServiceContact(),
+            jobOffers,
+            professionals
+        );
     }
 }

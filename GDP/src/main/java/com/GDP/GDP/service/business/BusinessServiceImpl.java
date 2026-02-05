@@ -46,14 +46,14 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     public BusinessResponse create(User user, BusinessRequest request) {
-        String normalized = normalizeBusinessName(request.getName());
+        String normalized = normalizeBusinessName(request.name());
 
         assertBusinessNameNotExists(user, normalized);
 
         Business business = new Business(
             normalized,
-            request.getDescription(),
-            request.getRecruitmentServiceContact(),
+            request.description(),
+            request.recruitmentServiceContact(),
             user
         );
 
@@ -64,7 +64,7 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     public BusinessResponse updateBusiness(User user, Long id, BusinessRequest request){
-        String normalized = normalizeBusinessName(request.getName());
+        String normalized = normalizeBusinessName(request.name());
 
         Business business = businessRepository.findByIdAndUserId(id, user.getId())
                     .orElseThrow(()-> new ResourceNotFoundException("Business", id));
@@ -73,8 +73,8 @@ public class BusinessServiceImpl implements BusinessService {
             assertBusinessNameNotExists(user, normalized);
             business.setName(normalized);
         }
-        business.setDescription(request.getDescription()); 
-        business.setRecruitmentServiceContact(request.getRecruitmentServiceContact());
+        business.setDescription(request.description()); 
+        business.setRecruitmentServiceContact(request.recruitmentServiceContact());
         return BusinessResponse.fromEntity(businessRepository.save(business));
         
     }

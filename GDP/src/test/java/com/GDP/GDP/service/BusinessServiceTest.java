@@ -70,12 +70,12 @@ class BusinessServiceTest {
         return business;
     }
 
-    private BusinessRequest createBusinessRequest(String name, String description, String contact) {
-        BusinessRequest request = new BusinessRequest();
-        request.setName(name);
-        request.setDescription(description);
-        request.setRecruitmentServiceContact(contact);
-        return request;
+    private BusinessRequest createBusinessRequest(
+        String name,
+        String description,
+        String contact
+    ) {
+        return new BusinessRequest(name, description, contact);
     }
 
     /* ---------------------------------------------------------
@@ -93,12 +93,14 @@ class BusinessServiceTest {
             Business b1 = createBusiness("Entreprise A", "Description A", "Contact A", currentUser);
             Business b2 = createBusiness("Entreprise B", "Description B", "Contact B", currentUser);
             when(businessRepository.findByUser_Id(userId)).thenReturn(List.of(b1, b2));
+
             // Act
             List<BusinessResponse> result = businessService.getBusinessByUserId(currentUser);
+
             // Assert
             assertThat(result)
                 .hasSize(2)
-                .extracting(BusinessResponse::getName)
+                .extracting(BusinessResponse::name)
                 .containsExactly("Entreprise A", "Entreprise B");
         }
 
@@ -110,16 +112,18 @@ class BusinessServiceTest {
             withJobOffer(business);
             withProfessional(business);
             when(businessRepository.findByUser_Id(userId)).thenReturn(List.of(business));
+
             // Act
             List<BusinessResponse> result = businessService.getBusinessByUserId(currentUser);
+
             // Assert
             assertThat(result)
                 .hasSize(1)
                 .first()
                 .satisfies(response -> {
-                    assertThat(response.getName()).isEqualTo("Entreprise A");
-                    assertThat(response.getJobOffersList()).hasSize(1);
-                    assertThat(response.getProfessionalsList()).hasSize(1);
+                    assertThat(response.name()).isEqualTo("Entreprise A");
+                    assertThat(response.jobOffersList()).hasSize(1);
+                    assertThat(response.professionalsList()).hasSize(1);
                 });
         }
 
@@ -128,8 +132,10 @@ class BusinessServiceTest {
         void shouldReturnEmptyListWhenUserHasNoBusinesses() {
             // Arrange
             when(businessRepository.findByUser_Id(userId)).thenReturn(List.of());
+
             // Act
             List<BusinessResponse> result = businessService.getBusinessByUserId(currentUser);
+
             // Assert
             assertThat(result).isEmpty();
         }
@@ -158,9 +164,9 @@ class BusinessServiceTest {
             // Assert
             assertThat(result)
                 .extracting(
-                    BusinessResponse::getName,
-                    BusinessResponse::getDescription,
-                    BusinessResponse::getRecruitmentServiceContact
+                    BusinessResponse::name,
+                    BusinessResponse::description,
+                    BusinessResponse::recruitmentServiceContact
                 )
                 .containsExactly("Entreprise A", "Description A", "Contact A");
         }
@@ -178,7 +184,7 @@ class BusinessServiceTest {
             BusinessResponse result = businessService.create(currentUser, request);
 
             // Assert
-            assertThat(result.getName()).isEqualTo("Entreprise A");
+            assertThat(result.name()).isEqualTo("Entreprise A");
         }
 
         @Test
@@ -218,8 +224,8 @@ class BusinessServiceTest {
             BusinessResponse result = businessService.create(currentUser, request);
 
             // Assert
-            assertThat(result.getName()).isEqualTo("Entreprise A");
-            assertThat(result.getDescription()).isNull();
+            assertThat(result.name()).isEqualTo("Entreprise A");
+            assertThat(result.description()).isNull();
         }
     }
 
@@ -245,9 +251,9 @@ class BusinessServiceTest {
             BusinessResponse result = businessService.updateBusiness(currentUser, 1L, request);
 
             // Assert
-            assertThat(result.getName()).isEqualTo("Entreprise A");
-            assertThat(result.getDescription()).isEqualTo("New Description");
-            assertThat(result.getRecruitmentServiceContact()).isEqualTo("New Contact");
+            assertThat(result.name()).isEqualTo("Entreprise A");
+            assertThat(result.description()).isEqualTo("New Description");
+            assertThat(result.recruitmentServiceContact()).isEqualTo("New Contact");
         }
 
         @Test
@@ -265,7 +271,7 @@ class BusinessServiceTest {
             BusinessResponse result = businessService.updateBusiness(currentUser, 1L, request);
 
             // Assert
-            assertThat(result.getName()).isEqualTo("Entreprise B");
+            assertThat(result.name()).isEqualTo("Entreprise B");
         }
 
         @Test
@@ -322,7 +328,7 @@ class BusinessServiceTest {
             BusinessResponse result = businessService.updateBusiness(currentUser, 1L, request);
 
             // Assert
-            assertThat(result.getName()).isEqualTo("Entreprise B");
+            assertThat(result.name()).isEqualTo("Entreprise B");
         }
 
         @Test
@@ -339,11 +345,10 @@ class BusinessServiceTest {
             BusinessResponse result = businessService.updateBusiness(currentUser, 1L, request);
 
             // Assert
-            assertThat(result.getDescription()).isEqualTo("New Desc");
-            assertThat(result.getRecruitmentServiceContact()).isEqualTo("New Contact");
+            assertThat(result.description()).isEqualTo("New Desc");
+            assertThat(result.recruitmentServiceContact()).isEqualTo("New Contact");
         }
     }
-
 
     /* ---------------------------------------------------------
         TESTS DELETE BUSINESS

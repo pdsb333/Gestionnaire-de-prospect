@@ -3,20 +3,17 @@ package com.GDP.GDP.controller;
 
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.GDP.GDP.service.AuthService;
-
-import jakarta.validation.Valid;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import com.GDP.GDP.dto.auth.LoginRequest;
 import com.GDP.GDP.dto.auth.RegisterRequest;
+import com.GDP.GDP.service.AuthService;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 
 
@@ -32,7 +29,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
-        String token = authService.register(request.getPseudo(), request.getEmail(), request.getPassword());
+        String token = authService.register(request.pseudo(), request.email(), request.password());
         ResponseCookie cookie = ResponseCookie.from("token", token)
                                 .httpOnly(true) //empeche l'accées via js cote cli
                                 .secure(false) //bloque envoie pas dns http
@@ -47,7 +44,7 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request) {
-        String token = authService.login(request.getEmail(), request.getPassword());
+        String token = authService.login(request.email(), request.password());
         ResponseCookie cookie = ResponseCookie.from("token", token)
                                 .httpOnly(true) //empeche l'accées via js cote cli
                                 .secure(false) //bloque envoie pas dns http

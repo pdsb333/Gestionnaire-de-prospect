@@ -3,7 +3,7 @@ Application de gestion de prospects, pensée pour accompagner les demandeurs d�
 
 ## Prérequis
 
-- Java 25 installé
+- Java 21 installé
 
 ## Installation
 

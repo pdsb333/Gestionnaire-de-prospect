@@ -39,13 +39,6 @@ public class AuthService {
 
         userRepository.save(user);
 
-        org.springframework.security.core.userdetails.User springUser =
-                new org.springframework.security.core.userdetails.User(
-                        user.getEmail(),
-                        user.getPassword(),
-                        java.util.List.of(() -> user.getRole().name())
-                );
-
         return jwtService.generateToken(user.getEmail());
     }
 
@@ -57,13 +50,6 @@ public class AuthService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
-
-        org.springframework.security.core.userdetails.User springUser =
-                new org.springframework.security.core.userdetails.User(
-                        user.getEmail(),
-                        user.getPassword(),
-                        java.util.List.of(() -> user.getRole().name())
-                );
 
         return jwtService.generateToken(user.getEmail());    }
 }

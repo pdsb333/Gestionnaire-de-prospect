@@ -1,11 +1,12 @@
 package com.GDP.GDP.service;
 
-import com.GDP.GDP.entity.User;
-import com.GDP.GDP.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.GDP.GDP.entity.User;
+import com.GDP.GDP.repository.UserRepository;
 
 @Service
 public class AuthService {
@@ -45,7 +46,7 @@ public class AuthService {
                         java.util.List.of(() -> user.getRole().name())
                 );
 
-        return jwtService.generateToken(springUser);
+        return jwtService.generateToken(user.getEmail());
     }
 
 
@@ -64,6 +65,5 @@ public class AuthService {
                         java.util.List.of(() -> user.getRole().name())
                 );
 
-        return jwtService.generateToken(springUser);
-    }
+        return jwtService.generateToken(user.getEmail());    }
 }

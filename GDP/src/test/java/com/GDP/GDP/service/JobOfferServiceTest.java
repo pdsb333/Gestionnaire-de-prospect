@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.*;
 import com.GDP.GDP.service.joboffer.JobOfferServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("JobOfferService - Tests unitaires")
+@DisplayName("JobOfferService - Unit tests")
 class JobOfferServiceImplTest {
 
     @Mock
@@ -54,12 +55,11 @@ class JobOfferServiceImplTest {
         testBusiness.setUser(testUser);
     }
 
-
     /* ---------------------------------------------------------
-        UTILITAIRES DE TEST
+        TEST UTILITIES
      --------------------------------------------------------- */
 
-    private JobOfferRequest createJobOfferRequest(String name, String link, Integer relaunchFrequency){
+    private JobOfferRequest createJobOfferRequest(String name, String link, Integer relaunchFrequency) {
         return new JobOfferRequest(name, link, relaunchFrequency);
     }
 
@@ -68,16 +68,17 @@ class JobOfferServiceImplTest {
         jobOffer.setId(id);
         return jobOffer;
     }
-    /* ---------------------------------------------------------
-        TESTS CREATE JOB OFFER
-     --------------------------------------------------------- */ 
 
-@Nested
-    @DisplayName("Tests de create()")
+    /* ---------------------------------------------------------
+        CREATE TESTS
+     --------------------------------------------------------- */
+
+    @Nested
+    @DisplayName("create() tests")
     class CreateTests {
 
         @Test
-        @DisplayName("Devrait créer un JobOffer avec des données valides et retourner la response correcte")
+        @DisplayName("Should create a JobOffer with valid data and return the correct response")
         void create_WithValidData_ReturnsJobOfferResponseWithCorrectValues() {
             // Given
             JobOfferRequest request = createJobOfferRequest("Dev Java", "https://example.com/job", 7);
@@ -91,7 +92,7 @@ class JobOfferServiceImplTest {
             // When
             JobOfferResponse response = jobOfferService.create(request, 1L, testUser);
 
-            // Then - vérifie l'objet passé à save()
+            // Then - verify the object passed to save()
             verify(jobOfferRepository).save(captor.capture());
             JobOffer captured = captor.getValue();
 
@@ -100,17 +101,17 @@ class JobOfferServiceImplTest {
             assertThat(captured.getRelaunchFrequency()).isEqualTo(7);
             assertThat(captured.getBusiness()).isEqualTo(testBusiness);
 
-            // Vérifie la response
+            // Verify the response
             assertThat(response.name()).isEqualTo("Dev Java");
             assertThat(response.link()).isEqualTo("https://example.com/job");
             assertThat(response.relaunchFrequency()).isEqualTo(7);
 
-            // Vérifie les appels de service
+            // Verify security check was called with correct arguments
             verify(verifyBusinessForUser).verifyBusiness(1L, testUser);
         }
 
         @Test
-        @DisplayName("Devrait lever ResourceNotFoundException quand le business n'appartient pas à l'utilisateur")
+        @DisplayName("Should throw ResourceNotFoundException when business does not belong to user")
         void create_WhenBusinessNotOwnedByUser_ThrowsResourceNotFoundException() {
             // Given
             JobOfferRequest request = createJobOfferRequest("Dev Java", "https://example.com", 7);
@@ -124,12 +125,11 @@ class JobOfferServiceImplTest {
                 .hasMessageContaining("Business")
                 .hasMessageContaining("999");
 
-            // Vérifie que save() n'est jamais appelé
             verify(jobOfferRepository, never()).save(any());
         }
 
         @Test
-        @DisplayName("Devrait lever ResourceNotFoundException quand le business n'existe pas")
+        @DisplayName("Should throw ResourceNotFoundException when business does not exist")
         void create_WhenBusinessNotFound_ThrowsResourceNotFoundException() {
             // Given
             JobOfferRequest request = createJobOfferRequest("Dev Java", "https://example.com", 7);
@@ -143,24 +143,102 @@ class JobOfferServiceImplTest {
                 .hasMessageContaining("Business")
                 .hasMessageContaining("888");
 
-            // Vérifie que save() n'est jamais appelé
             verify(jobOfferRepository, never()).save(any());
         }
 
         @Test
-        @DisplayName("Devrait propager l'exception si le repository échoue lors du save()")
+        @DisplayName("Should propagate exception when repository fails on save()")
         void create_WhenRepositoryFails_PropagatesException() {
             // Given
             JobOfferRequest request = createJobOfferRequest("Dev Java", "https://example.com/job", 7);
 
             when(verifyBusinessForUser.verifyBusiness(1L, testUser)).thenReturn(testBusiness);
-            when(jobOfferRepository.save(any(JobOffer.class))).thenThrow(new RuntimeException("Erreur base de données"));
+            when(jobOfferRepository.save(any(JobOffer.class))).thenThrow(new RuntimeException("Database error"));
 
             // When & Then
             assertThatThrownBy(() -> jobOfferService.create(request, 1L, testUser))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Erreur base de données");
+                .hasMessageContaining("Database error");
         }
     }
-  
+
+    /* ---------------------------------------------------------
+        UPDATE TESTS
+     --------------------------------------------------------- */
+
+    @Nested
+    @DisplayName("updateJobOffer() tests")
+    class UpdateTests {
+
+        @Test
+        @DisplayName("Should update all fields and return the modified JobOffer")
+        void update_WithAllFieldsChanged_ReturnsUpdatedJobOffer() {
+            // Given
+            JobOffer existingJobOffer = createJobOffer(1L, "Old Name", "https://old.com", 5, testBusiness);
+            JobOfferRequest updateRequest = createJobOfferRequest("New Name", "https://new.com", 10);
+
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, testUser.getId()))
+                .thenReturn(Optional.of(existingJobOffer));
+
+            // When
+            JobOfferResponse response = jobOfferService.updateJobOffer(updateRequest, 1L, testUser);
+
+            // Then
+            assertThat(response.name()).isEqualTo("New Name");
+            assertThat(response.link()).isEqualTo("https://new.com");
+            assertThat(response.relaunchFrequency()).isEqualTo(10);
+        }
+
+        @Test
+        @DisplayName("Should update only the name when only the name changes")
+        void update_WithOnlyNameChanged_UpdatesOnlyName() {
+            // Given
+            JobOffer existingJobOffer = createJobOffer(2L, "Old Name", "https://same.com", 7, testBusiness);
+            JobOfferRequest updateRequest = createJobOfferRequest("New Name", "https://same.com", 7);
+
+            when(jobOfferRepository.findByIdAndBusiness_UserId(2L, testUser.getId()))
+                .thenReturn(Optional.of(existingJobOffer));
+
+            // When
+            JobOfferResponse response = jobOfferService.updateJobOffer(updateRequest, 2L, testUser);
+
+            // Then
+            assertThat(response.name()).isEqualTo("New Name");
+            assertThat(response.link()).isEqualTo("https://same.com");
+            assertThat(response.relaunchFrequency()).isEqualTo(7);
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when JobOffer does not exist")
+        void update_WhenJobOfferNotFound_ThrowsResourceNotFoundException() {
+            // Given
+            JobOfferRequest updateRequest = createJobOfferRequest("Dev Java", "https://example.com", 7);
+
+            when(jobOfferRepository.findByIdAndBusiness_UserId(999L, testUser.getId()))
+                .thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> jobOfferService.updateJobOffer(updateRequest, 999L, testUser))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("JobOffer")
+                .hasMessageContaining("999");
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when JobOffer does not belong to user")
+        void update_WhenJobOfferNotOwnedByUser_ThrowsResourceNotFoundException() {
+            // Given
+            JobOfferRequest updateRequest = createJobOfferRequest("Dev Java", "https://example.com", 7);
+
+            when(jobOfferRepository.findByIdAndBusiness_UserId(888L, testUser.getId()))
+                .thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> jobOfferService.updateJobOffer(updateRequest, 888L, testUser))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("JobOffer")
+                .hasMessageContaining("888");
+        }
+    }
+
 }

@@ -43,5 +43,14 @@ public class JobOfferServiceImpl implements JobOfferService {
         Business business = verifyBusinessForUser.verifyBusiness(businessId, user);
         JobOffer jobOffer = new JobOffer(request.name(), request.link(), request.relaunchFrequency(), business);
         return JobOfferResponse.fromEntity(jobOfferRepository.save(jobOffer));
-    }       
+    }    
+    
+    @Override
+    public JobOfferResponse updateJobOffer(JobOfferRequest request, Long id, User user){
+        JobOffer jobOffer = verifyJobOffer(id, user);
+        jobOffer.setName(request.name());
+        jobOffer.setLink(request.link());
+        jobOffer.setRelaunchFrequency(request.relaunchFrequency());
+        return JobOfferResponse.fromEntity(jobOffer);
+    }
 }

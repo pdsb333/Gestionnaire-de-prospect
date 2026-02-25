@@ -8,5 +8,5 @@ import com.GDP.GDP.entity.User;
 public interface JobOfferService {
     JobOfferResponse create(JobOfferRequest request, Long businessId, User user);
     JobOfferResponse updateJobOffer(JobOfferRequest request, Long id, User user);
-    //void deleteJobOffer(Long id, User user);
+    void deleteJobOffer(Long id, User user);
 }

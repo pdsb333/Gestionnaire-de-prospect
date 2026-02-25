@@ -241,4 +241,56 @@ class JobOfferServiceImplTest {
         }
     }
 
+    /* ---------------------------------------------------------
+        DELETE TESTS
+     --------------------------------------------------------- */
+
+    @Nested
+    @DisplayName("deleteJobOffer() tests")
+    class DeleteTests {
+
+        @Test
+        @DisplayName("Should delete an existing JobOffer without throwing an exception")
+        void delete_WithValidJobOfferId_DeletesSuccessfully() {
+            // Given
+            JobOffer existingJobOffer = createJobOffer(1L, "Dev to Delete", "https://example.com", 7, testBusiness);
+
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, testUser.getId()))
+                .thenReturn(Optional.of(existingJobOffer));
+
+            // When
+            jobOfferService.deleteJobOffer(1L, testUser);
+
+            // Then - verify delete was actually called with the correct object
+            verify(jobOfferRepository).delete(existingJobOffer);
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when JobOffer to delete does not exist")
+        void delete_WhenJobOfferNotFound_ThrowsResourceNotFoundException() {
+            // Given
+            when(jobOfferRepository.findByIdAndBusiness_UserId(999L, testUser.getId()))
+                .thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> jobOfferService.deleteJobOffer(999L, testUser))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("JobOffer")
+                .hasMessageContaining("999");
+        }
+
+        @Test
+        @DisplayName("Should throw ResourceNotFoundException when JobOffer does not belong to user")
+        void delete_WhenJobOfferNotOwnedByUser_ThrowsResourceNotFoundException() {
+            // Given
+            when(jobOfferRepository.findByIdAndBusiness_UserId(888L, testUser.getId()))
+                .thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> jobOfferService.deleteJobOffer(888L, testUser))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("JobOffer")
+                .hasMessageContaining("888");
+        }
+    }
 }

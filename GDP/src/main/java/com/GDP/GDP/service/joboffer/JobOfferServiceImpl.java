@@ -53,4 +53,10 @@ public class JobOfferServiceImpl implements JobOfferService {
         jobOffer.setRelaunchFrequency(request.relaunchFrequency());
         return JobOfferResponse.fromEntity(jobOffer);
     }
+
+    @Override
+    public void deleteJobOffer(Long id, User user){
+        JobOffer jobOffer = verifyJobOffer(id, user);
+        jobOfferRepository.delete(jobOffer);
+    }
 }

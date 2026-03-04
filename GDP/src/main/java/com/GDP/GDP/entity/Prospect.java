@@ -1,9 +1,15 @@
 package com.GDP.GDP.entity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import jakarta.persistence.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class Prospect {
@@ -18,14 +24,14 @@ public abstract class Prospect {
     private LocalDateTime dateRelaunch;
 
     @ElementCollection
-    private List<LocalDateTime> historyOfRelaunches = new ArrayList<>();
+    private Set<LocalDateTime> historyOfRelaunches = new LinkedHashSet<>();
 
     public Prospect(){}
     
-    public Prospect(LocalDateTime initialApplicationDate, LocalDateTime dateRelaunch, List<LocalDateTime> historyOfRelaunches){
+    public Prospect(LocalDateTime initialApplicationDate, LocalDateTime dateRelaunch){
         this.initialApplicationDate = initialApplicationDate;
         this.dateRelaunch = dateRelaunch;
-        this.historyOfRelaunches = historyOfRelaunches;
+        this.historyOfRelaunches = new LinkedHashSet<>();    
     }
         
     // Getters and Setters
@@ -50,11 +56,8 @@ public abstract class Prospect {
         this.dateRelaunch = dateRelaunch;
     }
 
-    public List<LocalDateTime> getHistoryOfRelaunches(){
+    public Set<LocalDateTime> getHistoryOfRelaunches(){
         return historyOfRelaunches;
     }
 
-    public void setHistoryOfRelaunches(List<LocalDateTime> historyOfRelaunches){
-        this.historyOfRelaunches = historyOfRelaunches;
-    }
 }

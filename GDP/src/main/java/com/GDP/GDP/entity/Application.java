@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.util.List;
 
 
 @Entity
@@ -21,8 +20,8 @@ public class Application extends Prospect {
         super();
     }
 
-    public Application(LocalDateTime initialApplicationDate, LocalDateTime dateRelaunch, List<LocalDateTime> historyOfRelaunches, JobOffer offer) {
-        super(initialApplicationDate, dateRelaunch, historyOfRelaunches);
+    public Application(LocalDateTime initialApplicationDate, LocalDateTime dateRelaunch, JobOffer offer) {
+        super(initialApplicationDate, dateRelaunch);
         this.offer = offer;
     }
     // Getters and Setters

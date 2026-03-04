@@ -11,7 +11,7 @@ public class Canvassing extends Prospect {
         super();
     }
 
-    public Canvassing(java.time.LocalDateTime initialApplicationDate, java.time.LocalDateTime dateRelaunch, java.util.List<java.time.LocalDateTime> historyOfRelaunches) {
-        super(initialApplicationDate, dateRelaunch, historyOfRelaunches);
+    public Canvassing(java.time.LocalDateTime initialApplicationDate, java.time.LocalDateTime dateRelaunch) {
+        super(initialApplicationDate, dateRelaunch);
     }
 }

@@ -60,4 +60,7 @@ public abstract class Prospect {
         return historyOfRelaunches;
     }
 
+    public void addRelaunch(LocalDateTime date) {
+        this.historyOfRelaunches.add(date);
+    }
 }

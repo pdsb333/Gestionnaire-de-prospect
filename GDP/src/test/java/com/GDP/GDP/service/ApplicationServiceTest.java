@@ -68,9 +68,9 @@ class ApplicationServiceImplTest {
 
 
     /* ---------------------------------------------------------
-        TESTS CREATE BUSINESS
+        TESTS CREATE APPLICATION
     --------------------------------------------------------- */
-    
+
     @Nested
     @DisplayName("create()")
     class Create {
@@ -175,4 +175,96 @@ class ApplicationServiceImplTest {
         }
     }
 
+    /* ---------------------------------------------------------
+        TESTS UPDATE APPLICATION
+    --------------------------------------------------------- */
+
+    @Nested
+    @DisplayName("update()")
+    class Update {
+
+        @Test
+        @DisplayName("should update only dateRelaunch when initialApplicationDate is unchanged")
+        void shouldUpdateOnlyRelaunchDateWhenInitialDateUnchanged() {
+            LocalDateTime newRelaunch = initialDate.plusDays(14);
+            ApplicationRequest request = new ApplicationRequest(initialDate, newRelaunch);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse response = applicationService.update(request, 1L, user);
+
+            assertThat(response.dateRelaunch()).isEqualTo(newRelaunch);
+            assertThat(response.initialApplicationDate()).isEqualTo(initialDate);
+            assertThat(response.historyOfRelaunches()).containsExactly(initialDate);
+        }
+
+        @Test
+        @DisplayName("should replace old initialDate with new one in relaunch history")
+        void shouldReplaceOldInitialDateInHistoryWhenInitialDateChanges() {
+            LocalDateTime newInitialDate = LocalDateTime.of(2024, 2, 1, 10, 0);
+            ApplicationRequest request = new ApplicationRequest(newInitialDate, relaunchDate);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse response = applicationService.update(request, 1L, user);
+
+            assertThat(response.historyOfRelaunches()).contains(newInitialDate);
+            assertThat(response.historyOfRelaunches()).doesNotContain(initialDate);
+        }
+
+        @Test
+        @DisplayName("should recompute dateRelaunch via computeRelaunch when initialApplicationDate changes")
+        void shouldRecomputeRelaunchDateWhenInitialDateChanges() {
+            LocalDateTime newInitialDate = LocalDateTime.of(2024, 2, 1, 10, 0);
+            ApplicationRequest request = new ApplicationRequest(newInitialDate, relaunchDate);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse response = applicationService.update(request, 1L, user);
+
+            // relaunchFrequency = 7
+            assertThat(response.dateRelaunch()).isEqualTo(newInitialDate.plusDays(7));
+        }
+
+        @Test
+        @DisplayName("should update initialApplicationDate when it changes")
+        void shouldUpdateInitialApplicationDateWhenChanged() {
+            LocalDateTime newInitialDate = LocalDateTime.of(2024, 2, 1, 10, 0);
+            ApplicationRequest request = new ApplicationRequest(newInitialDate, relaunchDate);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse response = applicationService.update(request, 1L, user);
+
+            assertThat(response.initialApplicationDate()).isEqualTo(newInitialDate);
+        }
+
+        @Test
+        @DisplayName("should not call save() explicitly — Hibernate dirty checking")
+        void shouldNotCallSaveExplicitly() {
+            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            applicationService.update(request, 1L, user);
+
+            verify(applicationRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("should throw ResourceNotFoundException when application does not exist or does not belong to user")
+        void shouldThrowWhenApplicationNotFound() {
+            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(99L, user.getId()))
+                .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> applicationService.update(request, 99L, user))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(ex -> {
+                    ResourceNotFoundException e = (ResourceNotFoundException) ex;
+                    assertThat(e.getResource()).isEqualTo("Application");
+                    assertThat(e.getIdentifier()).isEqualTo(99L);
+                });
+        }
+    }
 }

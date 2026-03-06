@@ -32,6 +32,11 @@ public class ApplicationServiceImpl implements ApplicationService{
         return date.plusDays(frequency < 1 ? 1 : frequency);
     }
 
+    private Application verifyApplication(Long id, User user){
+        return applicationRepository.findByIdAndOffer_Business_UserId(id, user.getId())
+                                .orElseThrow(()-> new ResourceNotFoundException("Application", id));
+    }
+
     @Override
     public ApplicationResponse create(ApplicationRequest request, Long jobOfferId, User user){
         JobOffer jobOffer = jobOfferRepository.findById(jobOfferId)
@@ -47,6 +52,22 @@ public class ApplicationServiceImpl implements ApplicationService{
         application.addRelaunch(request.initialApplicationDate());
         
         return ApplicationResponse.fromEntity(applicationRepository.save(application));
+    }
+
+    @Override 
+    public ApplicationResponse update(ApplicationRequest request, Long id, User user){
+        Application application = verifyApplication(id, user);
+        
+        if(!application.getInitialApplicationDate().equals(request.initialApplicationDate())){
+            application.getHistoryOfRelaunches().remove(application.getInitialApplicationDate());
+            application.setInitialApplicationDate(request.initialApplicationDate());
+            application.addRelaunch(request.initialApplicationDate());
+            application.setDateRelaunch(computeRelaunch(request.initialApplicationDate(), application.getOffer().getRelaunchFrequency()));
+        } else {
+            application.setDateRelaunch(request.dateRelaunch());
+        }
+        
+        return ApplicationResponse.fromEntity(application);
     }
 
 }

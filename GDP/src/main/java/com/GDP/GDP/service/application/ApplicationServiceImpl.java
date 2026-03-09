@@ -70,4 +70,10 @@ public class ApplicationServiceImpl implements ApplicationService{
         return ApplicationResponse.fromEntity(application);
     }
 
+    @Override
+    public void delete(Long id, User user){
+        verifyApplication(id, user);
+        applicationRepository.deleteById(id);
+    }
+
 }

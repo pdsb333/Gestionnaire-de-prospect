@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.GDP.GDP.dto.joboffer.JobOfferRequest;
 import com.GDP.GDP.dto.joboffer.JobOfferResponse;
 import com.GDP.GDP.security.CustomUserDetails;
-import com.GDP.GDP.service.jobOffer.JobOfferService;
+import com.GDP.GDP.service.joboffer.JobOfferService;
 
 import jakarta.validation.Valid;
 

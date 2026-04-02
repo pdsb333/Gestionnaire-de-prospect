@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.GDP.GDP.dto.Application.ApplicationRequest;
-import com.GDP.GDP.dto.Application.ApplicationResponse;
+import com.GDP.GDP.dto.application.ApplicationRequest;
+import com.GDP.GDP.dto.application.ApplicationResponse;
 import com.GDP.GDP.security.CustomUserDetails;
 import com.GDP.GDP.service.application.ApplicationService;
 

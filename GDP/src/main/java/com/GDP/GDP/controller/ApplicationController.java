@@ -3,6 +3,7 @@ package com.GDP.GDP.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,6 +36,12 @@ public class ApplicationController {
     @PutMapping("/{applicationId}")
     public ResponseEntity<ApplicationResponse> update(@PathVariable Long applicationId, @Valid @RequestBody ApplicationRequest request, @AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok(applicationService.update(request, applicationId, user.getUser()));  
+    }
+
+    @DeleteMapping("/{applicationId}")
+    public ResponseEntity<Void> delete(@PathVariable Long applicationId, @AuthenticationPrincipal CustomUserDetails user){
+        applicationService.delete(applicationId, user.getUser());
+        return ResponseEntity.noContent().build();
     }
    
 }

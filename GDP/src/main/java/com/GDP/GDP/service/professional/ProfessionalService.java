@@ -1,8 +1,8 @@
 package com.GDP.GDP.service.professional;
 
 
-import com.GDP.GDP.dto.Professional.ProfessionalRequest;
-import com.GDP.GDP.dto.Professional.ProfessionalResponse;
+import com.GDP.GDP.dto.professional.ProfessionalRequest;
+import com.GDP.GDP.dto.professional.ProfessionalResponse;
 import com.GDP.GDP.entity.User;
 
 public interface ProfessionalService {

@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.GDP.GDP.components.VerifyBusinessForUser;
-import com.GDP.GDP.dto.Professional.ProfessionalRequest;
-import com.GDP.GDP.dto.Professional.ProfessionalResponse;
+import com.GDP.GDP.dto.professional.ProfessionalRequest;
+import com.GDP.GDP.dto.professional.ProfessionalResponse;
 import com.GDP.GDP.entity.Business;
 import com.GDP.GDP.entity.Professional;
 import com.GDP.GDP.entity.User;
@@ -24,8 +24,8 @@ public class ProfessionalServiceImpl implements ProfessionalService {
 
     @Override
     public ProfessionalResponse create(ProfessionalRequest request, Long id, User user){
-        Business business = verifyBusinessForUser.getBusiness(id, user);
-        Professional professional = new Professional(request.getLastName(), request.getFirstName(), request.getJob(), request.getContact(), business);
+        Business business = verifyBusinessForUser.verifyBusiness(id, user);
+        Professional professional = new Professional(request.lastName(), request.firstName(), request.job(), request.contact(), business);
         return ProfessionalResponse.fromEntity(professionalRepository.save(professional));
     }
 

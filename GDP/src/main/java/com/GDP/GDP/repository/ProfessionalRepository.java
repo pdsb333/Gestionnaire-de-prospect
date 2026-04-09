@@ -14,4 +14,5 @@ import com.GDP.GDP.entity.Professional;
 @Repository
 public interface ProfessionalRepository extends JpaRepository<Professional, Long>{
     List<Professional> findByBusiness(Business business);
+    Optional<Professional> findByIdAndBusiness_UserId(Long id, UUID userId);
 }

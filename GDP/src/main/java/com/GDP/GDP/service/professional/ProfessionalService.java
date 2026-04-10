@@ -8,5 +8,5 @@ import com.GDP.GDP.entity.User;
 public interface ProfessionalService {
     ProfessionalResponse create(ProfessionalRequest request, Long businessId, User user);
     ProfessionalResponse updateProfessional(ProfessionalRequest request, Long id, User user);
-   // void deleteProfessional(Long id, User user);
+    void deleteProfessional(Long id, User user);
 }

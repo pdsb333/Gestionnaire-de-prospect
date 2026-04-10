@@ -46,4 +46,9 @@ public class ProfessionalServiceImpl implements ProfessionalService {
         return ProfessionalResponse.fromEntity(professional);
     }
 
+    @Override
+    public void deleteProfessional(Long id, User user){
+        Professional professional = verifyProfessional(id, user);
+        professionalRepository.delete(professional);
+    }
 }

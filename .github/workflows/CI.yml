@@ -46,7 +46,7 @@ jobs:
       uses: PavanMudigonda/jacoco-reporter@v5.0
       with:
         coverage_results_path: GDP/target/site/jacoco/jacoco.xml
-        coverage_report_name: "Coverage Spring Boot GDP"
+        coverage_report_name: "Coverage"
         github_token: ${{ secrets.GITHUB_TOKEN }}
         #minimum_coverage: 70  
         #fail_below_threshold: false

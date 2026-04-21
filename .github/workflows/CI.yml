@@ -21,15 +21,18 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
+        cache: 'maven'
     
     - name: Cache Maven
       uses: actions/cache@v4
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('GDP/**/pom.xml') }}
+        restore-keys: |               
+          ${{ runner.os }}-m2-
     
     - name: Test avec Maven et JaCoCo
-      run: mvn test jacoco:report -f GDP/pom.xml -B --no-transfer-progress
+      run: mvn -U test jacoco:report -f GDP/pom.xml -B --no-transfer-progress
     
     - name: Publish Test Report
       uses: dorny/test-reporter@v1

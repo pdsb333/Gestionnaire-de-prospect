@@ -1,4 +1,4 @@
-package com.GDP.components;
+package com.GDP.GDP.components;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -17,7 +17,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.GDP.GDP.components.VerifyBusinessForUser;
 import com.GDP.GDP.entity.Business;
 import com.GDP.GDP.entity.User;
 import com.GDP.GDP.exception.ResourceNotFoundException;

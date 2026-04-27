@@ -46,7 +46,7 @@ jobs:
         TESTCONTAINERS_RYUK_DISABLED: "false"   
         TESTCONTAINERS_CHECKS_DISABLE: "false"  
     
-    - name: Publish Unit Test Report
+    - name: Publish Test Report
       uses: dorny/test-reporter@v1
       continue-on-error: true
       if: success() || failure()
@@ -55,16 +55,6 @@ jobs:
         path: "GDP/target/surefire-reports/TEST-*.xml"
         reporter: "java-junit"
         fail-on-error: false   
-
-    - name: Publish Integration Test Report
-      uses: dorny/test-reporter@v1
-      continue-on-error: true
-      if: success() || failure()
-      with:
-        name: "Tests d'intégration Spring Boot GDP"
-        path: "GDP/target/failsafe-reports/TEST-*.xml"
-        reporter: "java-junit"
-        fail-on-error: false        
 
     - name: JaCoCo Coverage Report
       id: jacoco

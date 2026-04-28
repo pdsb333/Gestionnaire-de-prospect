@@ -1,5 +1,6 @@
 package com.GDP.GDP.controller;
 
+import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -36,7 +37,9 @@ public class BusinessController {
     @PostMapping
     public ResponseEntity<BusinessResponse> create(@AuthenticationPrincipal CustomUserDetails user,
             @Valid @RequestBody BusinessRequest request) {
-        return ResponseEntity.ok(businessService.create(user.getUser(), request));
+            
+            URI location = URI.create("/api/business");
+            return ResponseEntity.created(location).body(businessService.create(user.getUser(), request));
     }
 
     @PutMapping("/{id}")

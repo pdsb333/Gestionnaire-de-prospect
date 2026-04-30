@@ -1,6 +1,8 @@
 package com.GDP.GDP.exception;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -43,6 +46,28 @@ public class GlobalExceptionHandler {
             ex.getMessage(),
             request,
             null
+        );
+    }
+    
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidationErrors(
+            MethodArgumentNotValidException ex,
+            WebRequest request
+    ) {
+        Map<String, List<String>> errors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+            errors
+                .computeIfAbsent(error.getField(), k -> new ArrayList<>())
+                .add(error.getDefaultMessage())
+        );
+
+        return buildResponse(
+            HttpStatus.BAD_REQUEST,
+            "VALIDATION_FAILED",
+            "Validation failed",
+            request,
+            errors
         );
     }
 

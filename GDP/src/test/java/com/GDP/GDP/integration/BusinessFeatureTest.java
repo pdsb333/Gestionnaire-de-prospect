@@ -67,6 +67,11 @@ public class BusinessFeatureTest extends AbstractIntegrationTest {
         return request;
     }
 
+    private BusinessRequest wrongRequest(){
+        BusinessRequest request = new BusinessRequest("", "A_description", "A_serviceContact");
+        return request;
+    }    
+
     private String toJson(Object obj) {
         try {
             return objectMapper.writeValueAsString(obj);
@@ -108,6 +113,20 @@ public class BusinessFeatureTest extends AbstractIntegrationTest {
             assertThat(saved.getUser().getId()).isEqualTo(savedUser.getId());
 
         }
+
+        @Test
+        @DisplayName("Should return 400 when name is blank")
+        void createBusiness_shouldReturnBadRequest_whenNameIsBlank() throws Exception {
+           mockMvc.perform(buildPost(wrongRequest(), createUser()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                    .andExpect(jsonPath("$.message").value("Validation failed"))
+                    .andExpect(jsonPath("$.path").value("/api/business"))
+                    .andExpect(jsonPath("$.validationErrors.name[0]").value("Name is required"));
+
+            assertThat(businessRepository.findAll()).isEmpty();
+        }        
     }
 
     //###########################################################

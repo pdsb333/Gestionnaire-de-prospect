@@ -86,6 +86,12 @@ public class BusinessFeatureTest extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(toJson(request));
     }
+    private MockHttpServletRequestBuilder buildPost(BusinessRequest request) {
+        return post("/api/business")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(request));
+    }
+
 
 
     //###########################################################
@@ -126,7 +132,16 @@ public class BusinessFeatureTest extends AbstractIntegrationTest {
                     .andExpect(jsonPath("$.validationErrors.name[0]").value("Name is required"));
 
             assertThat(businessRepository.findAll()).isEmpty();
-        }        
+        }     
+        
+        @Test
+        @DisplayName("Should return 401 when user not connected")
+        void createBusiness_shouldReturnUnauthorized_whenUserNotAuthenticated() throws Exception{
+            mockMvc.perform(buildPost(validRequest()))
+                        .andExpect(status().isUnauthorized());
+                        
+            assertThat(businessRepository.findAll()).isEmpty();
+        }
     }
 
     //###########################################################

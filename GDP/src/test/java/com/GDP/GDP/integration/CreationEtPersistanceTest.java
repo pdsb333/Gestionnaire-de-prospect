@@ -20,10 +20,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.GDP.GDP.dto.business.BusinessRequest;
 import com.GDP.GDP.dto.joboffer.JobOfferRequest;
+import com.GDP.GDP.dto.professional.ProfessionalRequest;
 import com.GDP.GDP.entity.User;
 import com.GDP.GDP.entity.User.Role;
 import com.GDP.GDP.repository.BusinessRepository;
 import com.GDP.GDP.repository.JobOfferRepository;
+import com.GDP.GDP.repository.ProfessionalRepository;
 import com.GDP.GDP.repository.UserRepository;
 import com.GDP.GDP.security.CustomUserDetails;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -51,6 +53,7 @@ public class CreationEtPersistanceTest extends AbstractIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private BusinessRepository businessRepository;
     @Autowired private JobOfferRepository jobOfferRepository;
+    @Autowired private ProfessionalRepository professionalRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
@@ -114,6 +117,22 @@ public class CreationEtPersistanceTest extends AbstractIntegrationTest {
             .get("id").asLong();
     }
 
+    /**
+     * Crée un contact professionnel rattaché à un business via l'API et retourne son id.
+     */
+    private Long createProfessional(Long businessId, String lastName, String firstName) throws Exception {
+        ProfessionalRequest req = new ProfessionalRequest(lastName, firstName, "Recruiter", "contact@" + lastName);
+        MvcResult result = mockMvc.perform(
+            post("/api/professionals/{businessId}", businessId)
+                .with(user(userDetails))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(req)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+        return objectMapper.readTree(result.getResponse().getContentAsString())
+            .get("id").asLong();
+    }
 
     // =========================================================================
     // TC-001 — Business + plusieurs JobOffers
@@ -225,4 +244,122 @@ public class CreationEtPersistanceTest extends AbstractIntegrationTest {
         }
     }
 
+    // =========================================================================
+    // TC-002 — Business + plusieurs Professionals (contacts)
+    // =========================================================================
+    @Nested
+    @DisplayName("TC-002 — Associer plusieurs contacts à un même business")
+    class TC002_BusinessWithMultipleProfessionals {
+
+        @Test
+        @DisplayName("Le business est persisté avant d'associer des contacts")
+        void tc002_businessShouldBePersisted_beforeAddingProfessionals() throws Exception {
+            Long businessId = createBusiness("Beta Corp");
+
+            assertThat(businessRepository.findAll()).hasSize(1);
+            assertThat(businessRepository.findAll().get(0).getId()).isEqualTo(businessId);
+        }
+
+        @Test
+        @DisplayName("Tous les contacts sont persistés et associés au bon business")
+        void tc002_allProfessionalsShouldBePersisted_withCorrectBusinessAssociation() throws Exception {
+            Long businessId = createBusiness("Beta Corp");
+            Long p1Id = createProfessional(businessId, "Dupont", "Alice");
+            Long p2Id = createProfessional(businessId, "Martin", "Bob");
+            Long p3Id = createProfessional(businessId, "Bernard", "Charlie");
+
+            var professionals = professionalRepository.findAll();
+            assertThat(professionals).hasSize(3);
+            assertThat(professionals).extracting(p -> p.getBusiness().getId())
+                .containsOnly(businessId);
+            assertThat(professionals).extracting(p -> p.getId())
+                .containsExactlyInAnyOrder(p1Id, p2Id, p3Id);
+        }
+
+        @Test
+        @DisplayName("GET /api/business retourne le business avec tous ses contacts imbriqués")
+        void tc002_getBusinessShouldReturnAllProfessionals_nested() throws Exception {
+            Long businessId = createBusiness("Beta Corp");
+            createProfessional(businessId, "Dupont", "Alice");
+            createProfessional(businessId, "Martin", "Bob");
+
+            mockMvc.perform(
+                get("/api/business")
+                    .with(user(userDetails))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(businessId))
+                .andExpect(jsonPath("$[0].professionalsList").isArray())
+                .andExpect(jsonPath("$[0].professionalsList.length()").value(2))
+                .andExpect(jsonPath("$[0].professionalsList[0].lastName").exists())
+                .andExpect(jsonPath("$[0].professionalsList[1].lastName").exists());
+        }
+
+        @Test
+        @DisplayName("401 — Créer un contact sans être authentifié")
+        void tc002_createProfessional_shouldReturn401_whenNotAuthenticated() throws Exception {
+            Long businessId = createBusiness("Beta Corp");
+
+            mockMvc.perform(
+                post("/api/professionals/{businessId}", businessId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new ProfessionalRequest("Dupont", "Alice", "Recruiter", "alice@mail.com"))))
+                .andExpect(status().isUnauthorized());
+
+            assertThat(professionalRepository.findAll()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("400 — Créer un contact avec un champ obligatoire manquant")
+        void tc002_createProfessional_shouldReturn400_whenLastNameIsBlank() throws Exception {
+            Long businessId = createBusiness("Beta Corp");
+
+            mockMvc.perform(
+                post("/api/professionals/{businessId}", businessId)
+                    .with(user(userDetails))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new ProfessionalRequest("", "Alice", "Recruiter", "alice@mail.com"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+
+            assertThat(professionalRepository.findAll()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("404 — Créer un contact sur un business inexistant")
+        void tc002_createProfessional_shouldReturn404_whenBusinessDoesNotExist() throws Exception {
+            mockMvc.perform(
+                post("/api/professionals/{businessId}", 9999L)
+                    .with(user(userDetails))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new ProfessionalRequest("Dupont", "Alice", "Recruiter", "alice@mail.com"))))
+                .andExpect(status().isNotFound());
+
+            assertThat(professionalRepository.findAll()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Plusieurs businesses indépendants ont chacun leurs propres contacts")
+        void tc002_eachBusinessShouldHaveItsOwnProfessionals_withoutCrossContamination() throws Exception {
+            Long business1Id = createBusiness("Beta Corp");
+            Long business2Id = createBusiness("Gamma Inc");
+
+            createProfessional(business1Id, "Dupont", "Alice");
+            createProfessional(business2Id, "Martin", "Bob");
+
+            var all = professionalRepository.findAll();
+            assertThat(all).hasSize(2);
+
+            var profBusiness1 = all.stream()
+                .filter(p -> p.getBusiness().getId().equals(business1Id)).toList();
+            var profBusiness2 = all.stream()
+                .filter(p -> p.getBusiness().getId().equals(business2Id)).toList();
+
+            assertThat(profBusiness1).hasSize(1);
+            assertThat(profBusiness1.get(0).getLastName()).isEqualTo("Dupont");
+            assertThat(profBusiness2).hasSize(1);
+            assertThat(profBusiness2.get(0).getLastName()).isEqualTo("Martin");
+        }
+    }
 }

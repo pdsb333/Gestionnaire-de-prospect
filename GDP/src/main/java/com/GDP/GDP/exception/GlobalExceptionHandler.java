@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -44,6 +45,22 @@ public class GlobalExceptionHandler {
             ex.geHttpStatus(),
             ex.getCode(),
             ex.getMessage(),
+            request,
+            null
+        );
+    }
+    
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrity(
+            DataIntegrityViolationException ex,
+            WebRequest request
+    ) {
+        logger.error("Data integrity violation", ex);
+
+        return buildResponse(
+            HttpStatus.CONFLICT,
+            "DATA_INTEGRITY_VIOLATION",
+            "Data integrity violation",
             request,
             null
         );

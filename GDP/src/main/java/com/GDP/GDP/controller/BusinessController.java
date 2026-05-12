@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,5 +46,11 @@ public class BusinessController {
     @PutMapping("/{id}")
     public ResponseEntity<BusinessResponse> update(@AuthenticationPrincipal CustomUserDetails user, @PathVariable Long id, @Valid @RequestBody BusinessRequest request){
         return ResponseEntity.ok(businessService.updateBusiness(user.getUser(), id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@AuthenticationPrincipal CustomUserDetails user, @PathVariable Long id){
+        businessService.deleteBusiness(user.getUser(), id);
+        return ResponseEntity.noContent().build();
     }
 }

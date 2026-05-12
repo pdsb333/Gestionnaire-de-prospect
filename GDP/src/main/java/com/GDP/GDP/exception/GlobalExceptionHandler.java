@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
             WebRequest request
     ) {
         return buildResponse(
-            ex.geHttpStatus(),
+            ex.getHttpStatus(),
             ex.getCode(),
             ex.getMessage(),
             request,

@@ -16,7 +16,7 @@ public abstract class BusinessException extends RuntimeException {
     public String getCode() {
         return code;
     }
-    public HttpStatus geHttpStatus(){
+    public HttpStatus getHttpStatus(){
         return httpStatus;
     }
 }

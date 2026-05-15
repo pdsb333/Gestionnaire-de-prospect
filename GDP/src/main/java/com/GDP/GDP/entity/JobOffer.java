@@ -1,5 +1,6 @@
 package com.GDP.GDP.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,7 +31,7 @@ public class JobOffer {
     @JoinColumn(name="business_id", nullable=false)
     private Business business;
 
-    @OneToOne(mappedBy="offer")
+    @OneToOne(mappedBy="offer", cascade= CascadeType.ALL, orphanRemoval = true)
     private Application application;
 
     public JobOffer(){

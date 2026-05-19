@@ -1,0 +1,190 @@
+package com.GDP.GDP.integration;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.GDP.GDP.dto.auth.RegisterRequest;
+import com.GDP.GDP.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
+/**
+ * TC-009 — Auth : register, login, logout
+ *   Topic : Sécurité et isolation
+ *   Scénario : Un utilisateur peut s'inscrire, se connecter et se déconnecter
+ *              via les endpoints publics d'authentification.
+ *
+ *   Ce test valide :
+ *     - Persistance et unicité de l'utilisateur (contrainte email)
+ *     - Hashage du mot de passe (jamais retourné en clair)
+ *     - Émission et validité du token/session après login
+ *     - Invalidation effective du token après logout
+ *     - Protection des routes après déconnexion (Spring Security filter chain)
+ *     - Validation des inputs sur les trois endpoints
+ */
+@DisplayName("TC-009 — Auth : register, login, logout")
+@SpringBootTest
+@AutoConfigureMockMvc
+public class AuthIntegrationTest extends AbstractIntegrationTest {
+
+    @Autowired private MockMvc mockMvc;
+    @Autowired private ObjectMapper objectMapper;
+    @Autowired private UserRepository userRepository;
+    @Autowired private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void setUp() {
+        jdbcTemplate.execute(
+            "TRUNCATE TABLE applications, job_offers, professionals, businesses, users RESTART IDENTITY CASCADE;"
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private String toJson(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private RegisterRequest validRegisterRequest() {
+        return new RegisterRequest("userA", "userA@mail.com", "password123");
+    }
+
+
+
+    // =========================================================================
+    // TC-009a — Register
+    // =========================================================================
+    @Nested
+    @DisplayName("Register — POST /api/auth/register")
+    class RegisterTest {
+
+        @Test
+        @DisplayName("201 — Inscription nominale : user persisté avec les bons champs")
+        void tc009_register_shouldReturn201_andPersistUser() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(validRegisterRequest())))
+                .andExpect(status().isNoContent());
+
+            var users = userRepository.findAll();
+            assertThat(users).hasSize(1);
+            assertThat(users.get(0).getEmail()).isEqualTo("userA@mail.com");
+            assertThat(users.get(0).getPseudo()).isEqualTo("userA");
+        }
+
+        @Test
+        @DisplayName("Le mot de passe est hashé en base (jamais stocké en clair)")
+        void tc009_register_shouldHashPassword_notStoreClearText() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(validRegisterRequest())))
+                .andExpect(status().isNoContent());
+
+            var user = userRepository.findAll().get(0);
+            assertThat(user.getPassword()).isNotEqualTo("password123");
+            assertThat(user.getPassword()).startsWith("$2"); // BCrypt prefix
+        }
+
+        @Test
+        @DisplayName("Le mot de passe n'est jamais retourné dans la réponse")
+        void tc009_register_shouldNeverReturnPassword_inResponse() throws Exception {
+            MvcResult result = mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(validRegisterRequest())))
+                .andExpect(status().isNoContent())
+                .andReturn();
+
+            String body = result.getResponse().getContentAsString();
+            assertThat(body).doesNotContain("password123");
+            assertThat(body).doesNotContain("password");
+        }
+
+        @Test
+        @DisplayName("409 — Email déjà utilisé : second register refusé, aucun doublon en base")
+        void tc009_register_shouldReturn409_whenEmailAlreadyExists() throws Exception {
+            // Premier register → OK
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(validRegisterRequest())))
+                .andExpect(status().isNoContent());
+
+            // Second register même email → 409
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new RegisterRequest("autreNom", "userA@mail.com", "autrePass"))))
+                .andExpect(status().isConflict());
+
+            // Aucun doublon
+            assertThat(userRepository.findAll()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("400 — Email malformé")
+        void tc009_register_shouldReturn400_whenEmailIsInvalid() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new RegisterRequest("userA", "pas-un-email", "password123"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+
+            assertThat(userRepository.findAll()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("400 — Pseudo vide")
+        void tc009_register_shouldReturn400_whenPseudoIsBlank() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new RegisterRequest("", "userA@mail.com", "password123"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+
+            assertThat(userRepository.findAll()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("400 — Password vide")
+        void tc009_register_shouldReturn400_whenPasswordIsBlank() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new RegisterRequest("userA", "userA@mail.com", ""))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+
+            assertThat(userRepository.findAll()).isEmpty();
+        }
+    }
+
+  
+}

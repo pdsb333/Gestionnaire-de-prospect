@@ -37,7 +37,7 @@ public class AuthController {
                                 .path("/")  //cookie accessible sur les routes commencant par:
                                 .maxAge(86400) //durée de vie du cookie
                                 .build();   
-        return ResponseEntity.ok()
+        return ResponseEntity.noContent()
                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString())
                 .build();
     }
@@ -52,7 +52,7 @@ public class AuthController {
                                 .path("/")  //cookie accessible sur les routes commencant par:
                                 .maxAge(86400) //durée de vie du cookie
                                 .build();
-        return ResponseEntity.ok()
+        return ResponseEntity.noContent()
                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString())
                 .build();
     }

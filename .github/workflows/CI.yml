@@ -2,8 +2,14 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/CI.yml"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/CI.yml"
 
 permissions:  
   checks: write

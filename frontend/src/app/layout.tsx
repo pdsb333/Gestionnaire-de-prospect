@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, DM_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
+import { GDPProvider } from "@/components/gdp-provider";
 const instrumentSerifHeading = Instrument_Serif({subsets:['latin'],weight:['400'],variable:'--font-heading'});
 
 const dmSans = DM_Sans({subsets:['latin'],variable:'--font-sans'});
@@ -32,7 +32,11 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", dmSans.variable, instrumentSerifHeading.variable)}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <GDPProvider>      
+          {children}
+        </GDPProvider>
+      </body>
     </html>
   );
 }

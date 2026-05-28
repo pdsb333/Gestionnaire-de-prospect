@@ -11,29 +11,6 @@
 
 ---
 
-## 📐 Architecture du Projet
-
-Le projet s'appuie sur une architecture découplée moderne :
-
-```mermaid
-
-graph TD
-
-    classDef client fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef server fill:#bbf,stroke:#333,stroke-width:2px;
-    classDef db fill:#fbf,stroke:#333,stroke-width:2px;
-
-    Client["💻 Client Frontend <br> (Next.js 16 / Tailwind CSS v4)"]:::client
-    Server["☕ API Backend <br> (Spring Boot 3.2.5)"]:::server
-    Database["🗄️ Base de Données <br> (PostgreSQL 15)"]:::db
-
-    Client -- "Requêtes HTTP / API REST (JWT via Cookies HttpOnly)" --> Server
-    Server -- "Spring Data JPA / JDBC" --> Database
-
-```
-
----
-
 ## ✨ Fonctionnalités Clés
 
 *   **🔒 Authentification Sécurisée** : Inscription et connexion avec gestion de session sécurisée par JWT stocké dans un cookie `HttpOnly`, assurant une protection robuste contre les attaques XSS.

@@ -45,7 +45,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
             } else {
                 await registerUser({ pseudo: data.pseudo, email: data.email, password: data.password });
             }
-            router.push("/home");
+            router.push("/dashboard");
         } catch (err: unknown) {
             setError("root", {
                 message: err instanceof Error ? err.message : "Erreur serveur",

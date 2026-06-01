@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, type ReactNode } from "react"
 import { GDPContext, type GDPStore } from "@/lib/store"
 import { apiClient } from "@/lib/api-client"
-import type { Auth } from "@/lib/types"
+import { Business, type Auth } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 
@@ -43,6 +43,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   const [isConfigured, setIsConfigured] = useState(() => apiClient.isConfigured())
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<{email: string} | null>(null)
+  const [businesses, setBusinesses] = useState<Business[]>([])
   
 
 
@@ -90,9 +91,33 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     },
     []
   )
+
+  const fetchBusinesses = useCallback(async () => {
+    if (!apiClient.isConfigured()) {
+      setIsConfigured(false)
+      setLoading(false)
+      return
+    }
+    try {
+      setLoading(true)
+      const data = await apiClient.getBusinesses()
+      setBusinesses(data)
+      setError(null)
+    } catch (err) {
+      console.error("Failed to fetch businesses:", err)
+      setError(err instanceof Error ? err.message : "Failed to load data")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchBusinesses()
+  }, [fetchBusinesses])
   
 
   const store: GDPStore = {
+    businesses,
     loading,
     error,
     user,

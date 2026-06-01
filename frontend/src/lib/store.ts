@@ -1,9 +1,10 @@
 "use client"
 
 import { createContext, useContext } from "react"
-import type {  Auth } from "./types"
+import type {  Auth, Business } from "./types"
 
 export interface GDPStore {
+    businesses: Business[]
     isAuthenticated: boolean
     user: {email: string} | null
     loading: boolean
@@ -20,3 +21,10 @@ export function useGDP(): GDPStore {
   return ctx
 }
 
+// GUARDS
+
+//Retourne un tableau vide si `businesses` n'est pas un tableau peuplé. 
+function safeBusinesses(businesses: Business[]): Business[] {
+  if (!Array.isArray(businesses) || businesses.length === 0) return []
+  return businesses
+}

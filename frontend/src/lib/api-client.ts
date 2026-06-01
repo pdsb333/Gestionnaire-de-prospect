@@ -1,4 +1,4 @@
-import type { Auth } from "@/lib/types"
+import type { Auth, Business } from "@/lib/types"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 
@@ -15,7 +15,7 @@ class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
-      credentials: "include", // ← envoie et reçoit les cookies httpOnly
+      credentials: "include", 
       headers: {
         "Content-Type": "application/json",
         ...options.headers,
@@ -46,6 +46,11 @@ class ApiClient {
       body: JSON.stringify(credentials),
     })
     return response
+  }
+
+  // ============ BUSINESSES ============
+  async getBusinesses(): Promise<Business[]> {
+    return this.request<Business[]>("/api/business/get")
   }
 
 }

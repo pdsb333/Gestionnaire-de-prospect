@@ -1,0 +1,93 @@
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import {
+  LayoutDashboard,
+  Building2,
+  FileText,
+  Bell,
+  Briefcase,
+} from "lucide-react"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarHeader,
+  SidebarFooter,
+} from "@/components/ui/sidebar"
+import { useGDP } from "@/lib/store"
+//import { getOverdueRelaunches, getTodayRelaunches } from "@/lib/store"
+
+const navItems = [
+  { title: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Entreprises", href: "/businesses", icon: Building2 },
+  { title: "Candidatures", href: "#2", icon: FileText },
+  { title: "Relances", href: "#1", icon: Bell },
+]
+
+export function AppSidebar() {
+  const pathname = usePathname()
+  const { businesses } = useGDP()
+  //const overdueCount = getOverdueRelaunches(businesses).length
+  //const todayCount = getTodayRelaunches(businesses).length
+ // const urgentCount = overdueCount + todayCount
+
+  return (
+    <Sidebar>
+      <SidebarHeader className="border-b border-border px-6 py-5">
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-foreground">
+            <Briefcase className="h-4 w-4 text-background" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold tracking-tight text-foreground">GDP</p>
+            <p className="text-xs text-muted-foreground">Gestion De Prospection</p>
+          </div>
+        </Link>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs uppercase tracking-widest text-muted-foreground">
+            Navigation
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => {
+                const isActive =
+                  item.href === "/dashboard"
+                    ? pathname === "/dashboard"
+                    : pathname.startsWith(item.href)
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton isActive={isActive}>
+                      <Link href={item.href} className="flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </span>
+                       {/*{item.href === "/relaunches" && urgentCount > 0 && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-[10px] font-medium text-background">
+                            {urgentCount}
+                          </span>
+                        )}  */}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter className="border-t border-border px-6 py-4">
+
+      </SidebarFooter>
+    </Sidebar>
+  )
+}

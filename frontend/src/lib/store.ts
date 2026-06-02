@@ -11,6 +11,7 @@ export interface GDPStore {
     error: string | null
     login: (credentials: Omit<Auth, "pseudo">) => Promise<void>
     register: (data: Auth) => Promise<void>
+    addBusiness: (b: Omit<Business, "id" | "jobOffersList" | "professionalsList">) => void
 }
 
 export const GDPContext = createContext<GDPStore | null>(null)

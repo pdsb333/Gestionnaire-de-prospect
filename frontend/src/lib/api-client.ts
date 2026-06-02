@@ -53,6 +53,15 @@ class ApiClient {
     return this.request<Business[]>("/api/business/get")
   }
 
+  async createBusiness(
+    data: Omit<Business, "id" | "professionalsList" | "jobOffersList">
+  ): Promise<Business> {
+    return this.request<Business>("/api/business/post", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  }
+
 }
 
 export const apiClient = new ApiClient()

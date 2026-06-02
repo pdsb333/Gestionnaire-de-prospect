@@ -5,7 +5,10 @@ import { Building2, ChevronRight, FileText, Users, Briefcase } from "lucide-reac
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useGDP } from "@/lib/store"
+import { apiClient } from "@/lib/api-client"
+import { AddBusinessDialog } from "@/components/businesses/add-business-dialog"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 export default function BusinessesPage() {
   const { businesses } = useGDP()
@@ -19,6 +22,7 @@ export default function BusinessesPage() {
             {businesses.length} entreprise{businesses.length !== 1 ? "s" : ""} suivie{businesses.length !== 1 ? "s" : ""}
           </p>
         </div>
+        <AddBusinessDialog />
       </div>
 
       {businesses.length === 0 ? (

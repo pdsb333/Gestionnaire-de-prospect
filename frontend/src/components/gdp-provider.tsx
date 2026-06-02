@@ -114,6 +114,21 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchBusinesses()
   }, [fetchBusinesses])
+
+  // Business mutation
+
+  const addBusiness = useCallback(
+    async (b: Omit<Business, "id" | "jobOffersList" | "professionalsList">) =>{
+      try{
+        await apiClient.createBusiness(b)
+        await fetchBusinesses()
+      } catch (err){
+        console.error("failed to create business: ", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
   
 
   const store: GDPStore = {
@@ -124,6 +139,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     isAuthenticated, 
     login,
     register,
+    addBusiness,
   }
 
   if (!isConfigured) {

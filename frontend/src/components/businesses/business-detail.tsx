@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { isPast, parseISO, isToday } from "date-fns"
 import {
@@ -15,11 +14,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGDP } from "@/lib/store"
 import { ApplicationRow } from "./application-row"
-import { apiClient } from "@/lib/api-client"
+import { useRouter } from "next/navigation"
 
 export function BusinessDetail({ businessId }: { businessId: number }) {
-  const { businesses} = useGDP()
+  const { businesses, deleteBusiness} = useGDP()
   const business = businesses.find((b) => b.id === businessId)
+  const router = useRouter();
+  const handleDelete = async () => {
+    await deleteBusiness(businessId)
+    router.push("/businesses")
+  }
 
   console.log(businesses);
   if (!business) {
@@ -90,7 +94,7 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
           </div>
 
           {/* Supprimer le business*/}
-          <Button variant="destructive" >
+          <Button variant="destructive" onClick={handleDelete}>
             Supprimer l&apos;entreprise
           </Button>
         </div>

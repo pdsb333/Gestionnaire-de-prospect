@@ -62,6 +62,13 @@ class ApiClient {
     })
   }
 
+  async deleteBusiness(id: number): Promise<void> {
+    return this.request<void>(`/api/business/delete/${id}`, {
+      method: "DELETE",
+    })
+  }
+
+
 }
 
 export const apiClient = new ApiClient()

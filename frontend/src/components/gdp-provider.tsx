@@ -129,6 +129,19 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     },
     [fetchBusinesses]
   )
+
+  const deleteBusiness = useCallback(
+    async (id: number) => {
+      try {
+        await apiClient.deleteBusiness(id)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to delete business:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
   
 
   const store: GDPStore = {
@@ -140,6 +153,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     login,
     register,
     addBusiness,
+    deleteBusiness,
   }
 
   if (!isConfigured) {

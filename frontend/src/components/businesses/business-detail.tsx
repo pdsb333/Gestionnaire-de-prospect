@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGDP } from "@/lib/store"
 import { ApplicationRow } from "./application-row"
 import { useRouter } from "next/navigation"
+import { EditBusinessDialog } from "./edit-business-dialog"
 
 export function BusinessDetail({ businessId }: { businessId: number }) {
   const { businesses, deleteBusiness} = useGDP()
@@ -92,11 +93,16 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
               )}
             </div>
           </div>
+          <div>              
+            {/* Modifier le business */}
+            <EditBusinessDialog business={business}/>
+            {/* Supprimer le business*/}
+            <Button variant="destructive" onClick={handleDelete}>
+              Supprimer l&apos;entreprise
+            </Button>
+          </div>
 
-          {/* Supprimer le business*/}
-          <Button variant="destructive" onClick={handleDelete}>
-            Supprimer l&apos;entreprise
-          </Button>
+          
         </div>
 
         {business.recruitmentServiceContact && (

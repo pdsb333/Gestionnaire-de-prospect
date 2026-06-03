@@ -13,6 +13,7 @@ export interface GDPStore {
     register: (data: Auth) => Promise<void>
     addBusiness: (b: Omit<Business, "id" | "jobOffersList" | "professionalsList">) => void
     deleteBusiness: (id:number) => Promise<void>
+    updateBusiness:(id:number, data: Partial<Business>) => void
 }
 
 export const GDPContext = createContext<GDPStore | null>(null)

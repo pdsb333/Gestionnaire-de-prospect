@@ -142,6 +142,19 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     },
     [fetchBusinesses]
   )
+
+  const updateBusiness = useCallback(
+    async (id: number, data: Partial<Business>) => {
+      try {
+        await apiClient.updateBusiness(id, data)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to update business:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
   
 
   const store: GDPStore = {
@@ -154,6 +167,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     register,
     addBusiness,
     deleteBusiness,
+    updateBusiness,
   }
 
   if (!isConfigured) {

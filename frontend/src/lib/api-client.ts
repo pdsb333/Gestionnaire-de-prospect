@@ -68,6 +68,13 @@ class ApiClient {
     })
   }
 
+  async updateBusiness(id:number, data: Partial<Business>) : Promise<Business>{
+    return this.request<Business>(`/api/business/put/${id}`,{
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
 
 }
 

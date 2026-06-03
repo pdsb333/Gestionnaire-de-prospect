@@ -16,6 +16,7 @@ import { useGDP } from "@/lib/store"
 import { ApplicationRow } from "./application-row"
 import { useRouter } from "next/navigation"
 import { EditBusinessDialog } from "./edit-business-dialog"
+import { AddOfferDialog } from "./add-offer-dialog"
 
 export function BusinessDetail({ businessId }: { businessId: number }) {
   const { businesses, deleteBusiness} = useGDP()
@@ -165,7 +166,7 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
         {/* Applications Tab — une ligne par offre ayant une candidature */}
         <TabsContent value="applications" className="flex flex-col gap-3 mt-0">
             <div className="flex justify-end">
-              <Button variant="secondary">Ajouter une offre d'emploi</Button>
+              <AddOfferDialog businessId={businessId}/>
             </div>
           {offersWithApplication.length === 0 ? (
             <Card>

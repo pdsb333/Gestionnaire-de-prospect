@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, type ReactNode } from "react"
 import { GDPContext, type GDPStore } from "@/lib/store"
 import { apiClient } from "@/lib/api-client"
-import { Business, type Auth } from "@/lib/types"
+import { Application, Business, JobOffer, type Auth } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 
@@ -155,6 +155,38 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     },
     [fetchBusinesses]
   )
+
+  //JobOffer mutation
+  const addJobOffer = useCallback(
+    async (businessId: number, data: Omit<JobOffer, "application" | "id">) => {
+      try {
+        const created = await apiClient.createJobOffer(businessId, data)
+        await fetchBusinesses()
+        return created
+      } catch (err) {
+        console.error("Failed to create job offer:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
+
+  //Application mutation
+  const addApplication = useCallback(
+    async (
+      jobOfferId: number,
+      app: Omit<Application, "id" | "historyOfRelaunches">
+    ) => {
+      try {
+        await apiClient.createApplication(jobOfferId, app)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to create application:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )  
   
 
   const store: GDPStore = {
@@ -168,6 +200,8 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     addBusiness,
     deleteBusiness,
     updateBusiness,
+    addJobOffer,
+    addApplication,
   }
 
   if (!isConfigured) {

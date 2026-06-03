@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext } from "react"
-import type {  Auth, Business } from "./types"
+import type {  Auth, Business, JobOffer, Application } from "./types"
 
 export interface GDPStore {
     businesses: Business[]
@@ -14,6 +14,8 @@ export interface GDPStore {
     addBusiness: (b: Omit<Business, "id" | "jobOffersList" | "professionalsList">) => void
     deleteBusiness: (id:number) => Promise<void>
     updateBusiness:(id:number, data: Partial<Business>) => void
+    addJobOffer: (businessId: number, data: Omit<JobOffer, "application" | "id">) => Promise<JobOffer>
+    addApplication: (jobofferId: number, data: Omit<Application, "id" | "historyOfRelaunches">) => void
 }
 
 export const GDPContext = createContext<GDPStore | null>(null)

@@ -1,4 +1,4 @@
-import type { Auth, Business } from "@/lib/types"
+import type { Application, Auth, Business, JobOffer } from "@/lib/types"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 
@@ -71,6 +71,28 @@ class ApiClient {
   async updateBusiness(id:number, data: Partial<Business>) : Promise<Business>{
     return this.request<Business>(`/api/business/put/${id}`,{
       method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
+  // ============ JOB OFFERS ============
+  async createJobOffer(
+    businessId: number,
+    data: Omit<JobOffer, "id" | "application">
+  ): Promise<JobOffer> {
+    return this.request<JobOffer>(`/api/joboffer/post/${businessId}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  }
+
+  // ============ APPLICATIONS ============
+  async createApplication(
+    jobOfferId: number,
+    data: Omit<Application, "id" | "historyOfRelaunches">
+  ): Promise<Application> {
+    return this.request<Application>(`/api/application/post/${jobOfferId}`, {
+      method: "POST",
       body: JSON.stringify(data),
     })
   }

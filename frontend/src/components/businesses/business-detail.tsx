@@ -10,13 +10,23 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardAction } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useGDP } from "@/lib/store"
 import { ApplicationRow } from "./application-row"
 import { useRouter } from "next/navigation"
 import { EditBusinessDialog } from "./edit-business-dialog"
 import { AddOfferDialog } from "./add-offer-dialog"
+import { AddProfessionalDialog } from "./add-professional-dialog"
 
 export function BusinessDetail({ businessId }: { businessId: number }) {
   const { businesses, deleteBusiness} = useGDP()
@@ -226,7 +236,7 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
         {/* Contacts Tab */}
         <TabsContent value="contacts" className="flex flex-col gap-3 mt-0">
           <div className="flex justify-end">
-            <Button variant="secondary">Ajouter un contact de l'entreprise</Button>
+            <AddProfessionalDialog businessId={businessId}/>
           </div>
           {professionalsList.length === 0 ? (
             <Card>
@@ -256,6 +266,21 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
                       {pro.contact}
                     </p>
                   )}
+                  <CardAction>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger render={<Button variant={"ghost"}/>}>
+                        ...
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuGroup>
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>Profile</DropdownMenuItem>
+                          <DropdownMenuItem>Billing</DropdownMenuItem>
+                          <DropdownMenuItem>Settings</DropdownMenuItem>
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardAction>
                 </CardContent>
               </Card>
             ))

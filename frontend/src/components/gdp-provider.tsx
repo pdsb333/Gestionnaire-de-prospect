@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, type ReactNode } from "react"
 import { GDPContext, type GDPStore } from "@/lib/store"
 import { apiClient } from "@/lib/api-client"
-import { Application, Business, JobOffer, type Auth } from "@/lib/types"
+import { Application, Business, JobOffer, Professional, type Auth } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 
@@ -171,7 +171,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     [fetchBusinesses]
   )
 
-  //Application mutation
+  //Application mutations
   const addApplication = useCallback(
     async (
       jobOfferId: number,
@@ -182,6 +182,20 @@ export function GDPProvider({ children }: { children: ReactNode }) {
         await fetchBusinesses()
       } catch (err) {
         console.error("Failed to create application:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )  
+
+  //Professional mutations
+  const addProfessional = useCallback(
+    async (businessId: number, p: Omit<Professional, "id">) => {
+      try {
+        await apiClient.createProfessional(businessId, p)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to create professional:", err)
         throw err
       }
     },
@@ -202,6 +216,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     updateBusiness,
     addJobOffer,
     addApplication,
+    addProfessional,
   }
 
   if (!isConfigured) {

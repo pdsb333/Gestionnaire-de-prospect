@@ -1,4 +1,4 @@
-import type { Application, Auth, Business, JobOffer } from "@/lib/types"
+import type { Application, Auth, Business, JobOffer, Professional } from "@/lib/types"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 
@@ -96,6 +96,17 @@ class ApiClient {
       body: JSON.stringify(data),
     })
   }
+
+  // ============ PROFESSIONALS ============
+  async createProfessional(
+    businessId: number,
+    data: Omit<Professional, "id">
+  ): Promise<Professional> {
+    return this.request<Professional>(`/api/professional/post/${businessId}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  }  
 
 
 }

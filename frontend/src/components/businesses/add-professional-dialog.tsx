@@ -1,0 +1,102 @@
+"use client"
+
+import { useState } from "react"
+import { Plus } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useGDP } from "@/lib/store"
+
+export function AddProfessionalDialog({ businessId }: { businessId: number }) {
+  const { addProfessional } = useGDP()
+  const [open, setOpen] = useState(false)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [job, setJob] = useState("")
+  const [contact, setContact] = useState("")
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!firstName.trim() || !lastName.trim()) return
+    addProfessional(businessId, {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      job: job.trim(),
+      contact: contact.trim(),
+    })
+    setFirstName("")
+    setLastName("")
+    setJob("")
+    setContact("")
+    setOpen(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="default" size="sm" className="gap-1.5" />}>
+          <Plus className="h-3.5 w-3.5" />
+          Contact
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Nouveau contact</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="pro-first">Prenom *</Label>
+              <Input
+                id="pro-first"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="pro-last">Nom *</Label>
+              <Input
+                id="pro-last"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="pro-job">Poste</Label>
+            <Input
+              id="pro-job"
+              value={job}
+              onChange={(e) => setJob(e.target.value)}
+              placeholder="Ex: Recruiter"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="pro-contact">Contact</Label>
+            <Input
+              id="pro-contact"
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              placeholder="Email, LinkedIn, telephone"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="submit">Ajouter</Button>
+            <DialogClose render={<Button type="button" variant="destructive" size="sm" className="gap-1.5" />}>
+              Annuler
+            </DialogClose>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}

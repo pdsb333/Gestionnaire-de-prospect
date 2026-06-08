@@ -108,6 +108,18 @@ class ApiClient {
     })
   }  
 
+  async updateProfessional(id: number, data: Partial<Professional>): Promise<Professional> {
+    return this.request<Professional>(`/api/professional/put/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteProfessional(id: number): Promise<void> {
+    return this.request<void>(`/api/professional/delete/${id}`, {
+      method: "DELETE",
+    })
+  }
 
 }
 

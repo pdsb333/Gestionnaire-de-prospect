@@ -201,7 +201,33 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     },
     [fetchBusinesses]
   )  
-  
+
+  const updateProfessional = useCallback(
+    async (id: number, data: Partial<Professional>) => {
+      try {
+        await apiClient.updateProfessional(id, data)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to update professional:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
+
+  const deleteProfessional = useCallback(
+    async (id: number) => {
+      try {
+        await apiClient.deleteProfessional(id)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to delete professional:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
+
 
   const store: GDPStore = {
     businesses,
@@ -217,6 +243,8 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     addJobOffer,
     addApplication,
     addProfessional,
+    updateProfessional,
+    deleteProfessional
   }
 
   if (!isConfigured) {

@@ -2,40 +2,29 @@
 
 import Link from "next/link"
 import { isPast, parseISO, isToday } from "date-fns"
-import {
-  ArrowLeft,
-  ExternalLink,
-  Mail,
-  User,
-  AlertCircle,
-} from "lucide-react"
+import { ArrowLeft, ExternalLink, Mail, User, AlertCircle, Pencil, TrashIcon} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardAction } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
 import { useGDP } from "@/lib/store"
 import { ApplicationRow } from "./application-row"
 import { useRouter } from "next/navigation"
 import { EditBusinessDialog } from "./edit-business-dialog"
+import { EditProfessionalDialog } from "./edit-professional-dialog"
 import { AddOfferDialog } from "./add-offer-dialog"
 import { AddProfessionalDialog } from "./add-professional-dialog"
 
 export function BusinessDetail({ businessId }: { businessId: number }) {
-  const { businesses, deleteBusiness} = useGDP()
+  const { businesses, deleteBusiness, deleteProfessional} = useGDP()
   const business = businesses.find((b) => b.id === businessId)
   const router = useRouter();
+
   const handleDelete = async () => {
     await deleteBusiness(businessId)
     router.push("/businesses")
   }
+
 
   console.log(businesses);
   if (!business) {
@@ -269,19 +258,22 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
                   <CardAction>
                     <DropdownMenu>
                       <DropdownMenuTrigger render={<Button variant={"ghost"}/>}>
-                        ...
+                        <Pencil className="h-4 w-4" />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuGroup>
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Profile</DropdownMenuItem>
-                          <DropdownMenuItem>Billing</DropdownMenuItem>
-                          <DropdownMenuItem>Settings</DropdownMenuItem>
+                          <DropdownMenuItem render={<EditProfessionalDialog professional={pro}/>}>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => deleteProfessional(pro.id)} variant="destructive">
+                              <TrashIcon className="h-4 w-4" />
+                              Supprimer 
+                          </DropdownMenuItem>
                         </DropdownMenuGroup>
                       </DropdownMenuContent>
                   </DropdownMenu>
                 </CardAction>
-                </CardContent>
+                </CardContent>    
               </Card>
             ))
           )}

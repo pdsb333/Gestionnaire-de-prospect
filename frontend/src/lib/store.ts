@@ -17,6 +17,8 @@ export interface GDPStore {
     addJobOffer: (businessId: number, data: Omit<JobOffer, "application" | "id">) => Promise<JobOffer>
     addApplication: (jobofferId: number, data: Omit<Application, "id" | "historyOfRelaunches">) => void
     addProfessional: (businessId: number, data: Omit<Professional, "id">) => void
+    updateProfessional: (id: number, data: Partial<Professional>) => void
+    deleteProfessional: (id: number) => void
 }
 
 export const GDPContext = createContext<GDPStore | null>(null)

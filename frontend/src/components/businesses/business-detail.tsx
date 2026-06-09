@@ -14,6 +14,7 @@ import { EditBusinessDialog } from "./edit-business-dialog"
 import { EditProfessionalDialog } from "./edit-professional-dialog"
 import { AddOfferDialog } from "./add-offer-dialog"
 import { AddProfessionalDialog } from "./add-professional-dialog"
+import { ContactRow } from "./contact-row"
 
 export function BusinessDetail({ businessId }: { businessId: number }) {
   const { businesses, deleteBusiness, deleteProfessional} = useGDP()
@@ -235,46 +236,11 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
             </Card>
           ) : (
             professionalsList.map((pro) => (
-              <Card key={pro.id}>
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        {pro.firstName} {pro.lastName}
-                      </p>
-                      {pro.job && (
-                        <p className="text-xs text-muted-foreground">{pro.job}</p>
-                      )}
-                    </div>
-                  </div>
-                  {pro.contact && (
-                    <p className="text-xs text-muted-foreground truncate max-w-[200px]">
-                      {pro.contact}
-                    </p>
-                  )}
-                  <CardAction>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger render={<Button variant={"ghost"}/>}>
-                        <Pencil className="h-4 w-4" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuGroup>
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem render={<EditProfessionalDialog professional={pro}/>}>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => deleteProfessional(pro.id)} variant="destructive">
-                              <TrashIcon className="h-4 w-4" />
-                              Supprimer 
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-                </CardAction>
-                </CardContent>    
-              </Card>
+              <ContactRow
+                key={pro.id}
+                pro={pro}
+                onDelete={deleteProfessional}
+              />
             ))
           )}
         </TabsContent>

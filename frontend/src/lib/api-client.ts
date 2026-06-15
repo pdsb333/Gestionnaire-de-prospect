@@ -86,6 +86,13 @@ class ApiClient {
     })
   }
 
+  async updateJobOffer(id: number, data: Partial<JobOffer>): Promise<JobOffer> {
+    return this.request<JobOffer>(`/api/joboffer/put/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
   // ============ APPLICATIONS ============
   async createApplication(
     jobOfferId: number,
@@ -96,6 +103,17 @@ class ApiClient {
       body: JSON.stringify(data),
     })
   }
+
+  async updateApplication(
+    id: number,
+    data: Partial<Application>
+  ): Promise<Application> {
+    return this.request<Application>(`/api/application/put/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
 
   // ============ PROFESSIONALS ============
   async createProfessional(

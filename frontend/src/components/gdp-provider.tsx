@@ -171,6 +171,20 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     [fetchBusinesses]
   )
 
+  const updateJobOffer = useCallback(
+    async (id: number, data: Partial<JobOffer>) => {
+      try {
+        const updated = await apiClient.updateJobOffer(id, data)
+        await fetchBusinesses()
+        return updated
+      } catch (err) {
+        console.error("Failed to update job offer:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
+
   //Application mutations
   const addApplication = useCallback(
     async (
@@ -187,6 +201,19 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     },
     [fetchBusinesses]
   )  
+
+  const updateApplication = useCallback(
+    async (id: number, data: Partial<Application>) => {
+      try {
+        await apiClient.updateApplication(id, data)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to update application:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
 
   //Professional mutations
   const addProfessional = useCallback(
@@ -241,7 +268,9 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     deleteBusiness,
     updateBusiness,
     addJobOffer,
+    updateJobOffer,
     addApplication,
+    updateApplication,
     addProfessional,
     updateProfessional,
     deleteProfessional

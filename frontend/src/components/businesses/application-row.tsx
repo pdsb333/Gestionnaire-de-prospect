@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  Trash
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { useGDP } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import type { Application, JobOffer } from "@/lib/types"
+import {EditOfferDialog} from "./edit-offer-dialog"
 import { apiClient } from "@/lib/api-client"
 
 interface ApplicationRowProps {
@@ -131,7 +133,15 @@ export function ApplicationRow({ application, businessId, jobOffer }: Applicatio
         {/* Expanded panel */}
         {expanded && (
           <div className="border-t border-border px-4 py-4 flex flex-col gap-4">
-            
+            <div className="flex justify-end">
+              <Button variant="ghost" className="text-destructive">
+                <span className="sr-only">Supprimer l&apos;offre</span>
+                <Trash/>
+              </Button>
+              <EditOfferDialog
+                offer={jobOffer}
+              />
+            </div>
             {/* Mark relaunch done */}
             <div className="flex flex-col gap-2 rounded-md border border-border p-3">
               <p className="text-xs font-medium">Marquer une relance effectuée</p>
@@ -177,9 +187,6 @@ export function ApplicationRow({ application, businessId, jobOffer }: Applicatio
                 </div>
               </div>
             )}
-            <Button className="bg-primary">
-              Supprimer l&apos;offre
-            </Button>
           </div>
         )}
       </CardContent>

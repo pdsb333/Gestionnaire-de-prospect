@@ -6,7 +6,7 @@ import {
   LayoutDashboard,
   Building2,
   FileText,
-  Bell,
+  Contact,
   Briefcase,
 } from "lucide-react"
 import {
@@ -28,7 +28,7 @@ const navItems = [
   { title: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
   { title: "Entreprises", href: "/businesses", icon: Building2 },
   { title: "Candidatures", href: "#2", icon: FileText },
-  { title: "Relances", href: "#1", icon: Bell },
+  { title: "Contacts", href: "/contacts", icon: Contact },
 ]
 
 export function AppSidebar() {

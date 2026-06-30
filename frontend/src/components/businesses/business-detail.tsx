@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"
 import { EditBusinessDialog } from "./edit-business-dialog"
 import { EditProfessionalDialog } from "./edit-professional-dialog"
 import { AddOfferDialog } from "./add-offer-dialog"
+import {AddApplicationDialog} from "./add-application-dialog"
 import { AddProfessionalDialog } from "./add-professional-dialog"
 import { ContactRow } from "./contact-row"
 
@@ -214,7 +215,7 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
                         </a>
                       )}
                     </div>
-                    <Button variant="outline" size="lg">Ajouter une candidature</Button>
+                    <AddApplicationDialog jobOfferId={offer.id} jobOfferName={offer.name ?? "Offre sans titre"} />
                   </CardContent>
                 </Card>
               ))}

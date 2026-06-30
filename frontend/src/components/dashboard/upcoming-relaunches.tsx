@@ -30,7 +30,7 @@ export function UpcomingRelaunches() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-lg font-semibold">Relances a venir</CardTitle>
+        <CardTitle className="text-lg font-semibold">Relances à venir</CardTitle>
         <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
           <Link href="/businesses" className="flex items-center">
             Tout voir <ArrowRight className="ml-1 h-3 w-3" />

@@ -27,7 +27,7 @@ import { useGDP } from "@/lib/store"
 const navItems = [
   { title: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
   { title: "Entreprises", href: "/businesses", icon: Building2 },
-  { title: "Candidatures", href: "#2", icon: FileText },
+  { title: "Candidatures", href: "/relaunches", icon: FileText },
   { title: "Contacts", href: "/contacts", icon: Contact },
 ]
 

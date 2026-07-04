@@ -114,6 +114,12 @@ class ApiClient {
     })
   }
 
+  async markApplicationRelaunched(id: number): Promise<Application> {
+    return this.request<Application>(`/api/application/${id}/relance`, {
+      method: "POST",
+    })
+  }
+
 
   // ============ PROFESSIONALS ============
   async createProfessional(

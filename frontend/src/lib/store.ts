@@ -18,6 +18,7 @@ export interface GDPStore {
     updateJobOffer: (id: number, data: Partial<JobOffer>) => Promise<JobOffer>
     addApplication: (jobofferId: number, data: Omit<Application, "id" | "historyOfRelaunches">) => void
     updateApplication: (id: number, data: Partial<Application>) => void
+    markApplicationRelaunched: (id: number) => Promise<void>
     addProfessional: (businessId: number, data: Omit<Professional, "id">) => void
     updateProfessional: (id: number, data: Partial<Professional>) => void
     deleteProfessional: (id: number) => void

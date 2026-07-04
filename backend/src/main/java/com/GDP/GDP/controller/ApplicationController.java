@@ -33,6 +33,13 @@ public class ApplicationController {
                              .body(applicationService.create(request, jobOfferId, user.getUser()));
     }
 
+    @PostMapping("/{applicationId}/relance")
+    public ResponseEntity<ApplicationResponse> markRelaunched(
+            @PathVariable Long applicationId,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(applicationService.markRelaunched(applicationId, user.getUser()));
+    }
+
     @PutMapping("/{applicationId}")
     public ResponseEntity<ApplicationResponse> update(@PathVariable Long applicationId, @Valid @RequestBody ApplicationRequest request, @AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok(applicationService.update(request, applicationId, user.getUser()));  

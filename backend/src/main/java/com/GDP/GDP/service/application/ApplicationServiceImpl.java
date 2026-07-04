@@ -76,4 +76,15 @@ public class ApplicationServiceImpl implements ApplicationService{
         applicationRepository.deleteById(id);
     }
 
+    @Override
+    public ApplicationResponse markRelaunched(Long id, User user) {
+        Application application = verifyApplication(id, user);
+    
+        LocalDateTime now = LocalDateTime.now();
+        application.addRelaunch(now);
+        application.setDateRelaunch(computeRelaunch(now, application.getOffer().getRelaunchFrequency()));
+    
+        return ApplicationResponse.fromEntity(application);
+    }
+
 }

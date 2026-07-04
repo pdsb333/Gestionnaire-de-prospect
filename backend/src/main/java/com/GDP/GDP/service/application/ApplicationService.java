@@ -8,4 +8,5 @@ public interface ApplicationService {
     ApplicationResponse create(ApplicationRequest request, Long jobOfferId, User user);
     ApplicationResponse update(ApplicationRequest request, Long applicationId, User user);
     void delete(Long applicationId, User user);
+    ApplicationResponse markRelaunched(Long id, User user);
 }

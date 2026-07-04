@@ -215,6 +215,19 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     [fetchBusinesses]
   )
 
+  const markApplicationRelaunched = useCallback(
+    async (id: number) => {
+      try {
+        await apiClient.markApplicationRelaunched(id)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to mark application as relaunched:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
+
   //Professional mutations
   const addProfessional = useCallback(
     async (businessId: number, p: Omit<Professional, "id">) => {
@@ -271,6 +284,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     updateJobOffer,
     addApplication,
     updateApplication,
+    markApplicationRelaunched,
     addProfessional,
     updateProfessional,
     deleteProfessional

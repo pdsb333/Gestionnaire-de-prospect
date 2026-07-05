@@ -2,11 +2,10 @@
 
 import Link from "next/link"
 import { isPast, parseISO, isToday } from "date-fns"
-import { ArrowLeft, ExternalLink, Mail, User, AlertCircle, Pencil, TrashIcon} from "lucide-react"
+import { ArrowLeft, ExternalLink, Mail, User, AlertCircle, Pencil, TrashIcon, Trash} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardAction } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
 import { useGDP } from "@/lib/store"
 import { ApplicationRow } from "./application-row"
 import { useRouter } from "next/navigation"
@@ -99,9 +98,12 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
             {/* Modifier le business */}
             <EditBusinessDialog business={business}/>
             {/* Supprimer le business*/}
-            <Button variant="destructive" onClick={handleDelete}>
-              Supprimer l&apos;entreprise
-            </Button>
+            <Button variant="ghost" className="text-destructive" size="lg" onClick={handleDelete}>
+                <span className="sr-only">
+                  Supprimer l&apos;entreprise
+                </span>
+                <Trash className="h-4 w-4" />
+              </Button>
           </div>
 
           

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useGDP } from "@/lib/store"
 import { BusinessFormDialog } from "./business-form-dialog"
 import { Business } from "@/lib/types"
+import { Pencil } from "lucide-react"
 
 interface EditBusinessDialogProps {
   business : Business
@@ -16,13 +17,11 @@ export function EditBusinessDialog({ business }: EditBusinessDialogProps) {
 
   return (
     <>
-      <Button
-        size="lg"
-        variant="secondary"
-        className="h-8 w-25"
-        onClick={() => setOpen(true)}
-      >
-        Modifier
+      <Button variant="ghost" onClick={() => setOpen(true)} size="lg">
+                <span className="sr-only">
+                  Modifier l&apos;entreprise
+                </span>
+                <Pencil className="h-4 w-4" />
       </Button>
 
       <BusinessFormDialog

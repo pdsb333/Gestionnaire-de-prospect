@@ -166,7 +166,7 @@ export default function Page() {
           <h2 className="mb-10 text-3xl font-bold tracking-tight text-primary sm:text-4xl">
             Moins de stress. Plus de clarté.
           </h2>
-          <div className="rounded-2xl border border-muted bg-primary-foreground p-8 shadow-sm">
+          <div className="rounded-2xl border border-muted bg-primary-foreground md:p-7 p-5 shadow-sm">
             {[
               "Vision claire de votre avancement",
               "Relances faites au bon moment",

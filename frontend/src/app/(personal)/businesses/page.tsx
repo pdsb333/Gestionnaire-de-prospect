@@ -70,7 +70,7 @@ export default function BusinessesPage() {
                             </Badge>
                           )}
                         </div>
-                        <p className="truncate text-xs text-muted-foreground mt-0.5 w-[800px] h-auto">
+                        <p className="truncate text-xs text-muted-foreground mt-0.5">
                           {biz.description || "Pas de description"}
                         </p>
                       </div>

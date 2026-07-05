@@ -66,7 +66,7 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 <CardContent
-                    style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+                    style={{ display: "flex", flexDirection: "column", gap: "16px", margin: "16px 0" }}
                 >
                     {!isLogin && (
                         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>

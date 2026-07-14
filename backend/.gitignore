@@ -34,3 +34,6 @@ build/
 
 ###personnal memo
 README_DEV.md
+
+### env vars (secrets, ne jamais commit) ###
+.env

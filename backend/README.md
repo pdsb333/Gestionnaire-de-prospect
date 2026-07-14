@@ -6,9 +6,32 @@ Cette documentation s'adresse aux développeurs reprenant le projet et fournit u
 
 ---
 
-## 🛠️ 1. Configuration Docker & Base de Données
+## 🛠️ 1. Configuration Docker, Base de Données & Variables d'Environnement
 
-Le backend s'appuie sur une base de données **PostgreSQL 15** configurée via Docker Compose.
+Le backend s'appuie sur une base de données **PostgreSQL 15** configurée via Docker Compose, et sa configuration est gérée de manière dynamique à l'aide de variables d'environnement.
+
+### 🔑 Variables d'Environnement (`.env`)
+
+Le projet utilise **`spring-dotenv`** pour charger automatiquement les variables d'environnement depuis un fichier `.env` local (qui est exclu de Git pour des raisons de sécurité).
+
+Pour configurer votre environnement local :
+1. Copiez le fichier d'exemple `.env.example` pour créer votre fichier `.env` :
+   ```bash
+   cp .env.example .env
+   ```
+2. Modifiez le fichier `.env` avec vos accès. Pour le développement local avec le conteneur Docker par défaut, utilisez les valeurs suivantes :
+   ```env
+   DB_URL=jdbc:postgresql://localhost:5432/nom_de_la_base
+   DB_USERNAME=utilisateur
+   DB_PASSWORD=motdepasse
+   ```
+
+Ces variables d'environnement sont automatiquement injectées dans le fichier `backend/src/main/resources/application.properties` au démarrage :
+```properties
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+```
 
 ### Fichier `docker-compose.yml`
 ```yaml
@@ -74,6 +97,9 @@ Le projet s'appuie sur un ensemble de dépendances Java robustes déclarées dan
 *   **`testcontainers` (Version 1.20.4 dans le BOM)** :
     *   `junit-jupiter` (Scope: `test`) : Intégration de Testcontainers avec le moteur de test JUnit 5.
     *   `postgresql` (Scope: `test`) : Module de conteneurisation éphémère d'une vraie base PostgreSQL pour exécuter les tests d'intégration sans perturber la base locale.
+
+### ⚙️ Configuration & Gestion de l'Environnement
+*   **`spring-dotenv` (Version 4.0.0)** : Charge automatiquement les variables définies dans un fichier `.env` local dans l'environnement Spring. Cela évite de stocker des informations sensibles (comme les identifiants de base de données) en clair dans les fichiers de configuration de l'application.
 
 ### ⚙️ Plugins de Build Importants
 *   **`spring-boot-maven-plugin`** : Emballe l'application sous forme de fichier JAR exécutable prêt pour la production.
@@ -184,17 +210,25 @@ Voici les liens indispensables pour maîtriser les technologies utilisées et ap
 
 ## 🎮 7. Commandes de Prise en Main Rapide
 
-Avant de lancer le projet, assurez-vous d'avoir démarré la base PostgreSQL locale via Docker.
+Avant de lancer le projet, assurez-vous d'avoir démarré la base PostgreSQL locale via Docker et d'avoir configuré vos variables d'environnement.
 
-* **Compiler et packager l'application (sans exécuter les tests) :**
-  ```bash
-  ./mvnw clean package -DskipTests
-  ```
-* **Lancer l'intégralité des tests unitaires et d'intégration :**
-  ```bash
-  ./mvnw clean verify
-  ```
-* **Démarrer l'API Spring Boot en mode développement :**
-  ```bash
-  ./mvnw spring-boot:run
-  ```
+1. **Initialiser les variables d'environnement :**
+   ```bash
+   cp .env.example .env
+   ```
+2. **Démarrer la base de données :**
+   ```bash
+   docker compose up -d
+   ```
+3. **Compiler et packager l'application (sans exécuter les tests) :**
+   ```bash
+   ./mvnw clean package -DskipTests
+   ```
+4. **Lancer l'intégralité des tests unitaires et d'intégration :**
+   ```bash
+   ./mvnw clean verify
+   ```
+5. **Démarrer l'API Spring Boot en mode développement :**
+   ```bash
+   ./mvnw spring-boot:run
+   ```

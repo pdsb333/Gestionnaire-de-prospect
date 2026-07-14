@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.GDP.GDP.dto.auth.LoginRequest;
 import com.GDP.GDP.dto.auth.RegisterRequest;
 import com.GDP.GDP.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -85,7 +86,7 @@ public class AuthIntegrationTest extends AbstractIntegrationTest {
                 post("/api/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(toJson(validRegisterRequest())))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isCreated());
 
             var users = userRepository.findAll();
             assertThat(users).hasSize(1);
@@ -100,7 +101,7 @@ public class AuthIntegrationTest extends AbstractIntegrationTest {
                 post("/api/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(toJson(validRegisterRequest())))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isCreated());
 
             var user = userRepository.findAll().get(0);
             assertThat(user.getPassword()).isNotEqualTo("password123");
@@ -114,7 +115,7 @@ public class AuthIntegrationTest extends AbstractIntegrationTest {
                 post("/api/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(toJson(validRegisterRequest())))
-                .andExpect(status().isNoContent())
+                .andExpect(status().isCreated())
                 .andReturn();
 
             String body = result.getResponse().getContentAsString();
@@ -130,7 +131,7 @@ public class AuthIntegrationTest extends AbstractIntegrationTest {
                 post("/api/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(toJson(validRegisterRequest())))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isCreated());
 
             // Second register même email → 409
             mockMvc.perform(
@@ -186,5 +187,94 @@ public class AuthIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
-  
+    // =========================================================================
+    // TC-009b — Login
+    // =========================================================================
+    @Nested
+    @DisplayName("Login — POST /api/auth/login")
+    class LoginTest {
+
+        @Test
+        @DisplayName("204 — Login nominal : cookie 'token' posé avec les attributs configurés (secure/sameSite)")
+        void tc009_login_shouldReturn204_andSetTokenCookie() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(validRegisterRequest())))
+                .andExpect(status().isCreated());
+
+            MvcResult result = mockMvc.perform(
+                post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new LoginRequest("userA@mail.com", "password123"))))
+                .andExpect(status().isNoContent())
+                .andReturn();
+
+            String setCookie = result.getResponse().getHeader("Set-Cookie");
+            assertThat(setCookie).isNotNull();
+            assertThat(setCookie).contains("token=");
+            assertThat(setCookie).containsIgnoringCase("HttpOnly");
+            // reflects app.auth.cookie.same-site / app.auth.cookie.secure defaults (Lax / false)
+            assertThat(setCookie).containsIgnoringCase("SameSite=Lax");
+            assertThat(setCookie).doesNotContainIgnoringCase("Secure");
+        }
+
+        @Test
+        @DisplayName("400 — Email malformé")
+        void tc009_login_shouldReturn400_whenEmailIsInvalid() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new LoginRequest("pas-un-email", "password123"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+        }
+    }
+
+    // =========================================================================
+    // TC-009c — Logout
+    // =========================================================================
+    @Nested
+    @DisplayName("Logout — POST /api/auth/logout")
+    class LogoutTest {
+
+        @Test
+        @DisplayName("204 — Logout : cookie 'token' vidé avec EXACTEMENT les mêmes attributs HttpOnly/Secure/SameSite que login")
+        void tc009_logout_shouldClearTokenCookie_withSameAttributesAsLogin() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(validRegisterRequest())))
+                .andExpect(status().isCreated());
+
+            MvcResult loginResult = mockMvc.perform(
+                post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new LoginRequest("userA@mail.com", "password123"))))
+                .andExpect(status().isNoContent())
+                .andReturn();
+            String loginCookie = loginResult.getResponse().getHeader("Set-Cookie");
+
+            MvcResult logoutResult = mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isNoContent())
+                .andReturn();
+            String logoutCookie = logoutResult.getResponse().getHeader("Set-Cookie");
+
+            assertThat(logoutCookie).isNotNull();
+            assertThat(logoutCookie).contains("token=;"); // valeur vidée
+            assertThat(logoutCookie).containsIgnoringCase("Max-Age=0"); // expire immédiatement
+
+            // Régression du bug historique : login posait secure=false/sameSite=Lax mais logout
+            // posait secure=true/sameSite=None, donc le navigateur refusait le cookie de logout
+            // en HTTP et ne supprimait jamais la session. On vérifie ici que les deux cookies
+            // partagent strictement les mêmes attributs HttpOnly/Secure/SameSite.
+            for (String attribute : new String[] { "HttpOnly", "SameSite=Lax" }) {
+                assertThat(loginCookie).containsIgnoringCase(attribute);
+                assertThat(logoutCookie).containsIgnoringCase(attribute);
+            }
+            assertThat(loginCookie).doesNotContainIgnoringCase("Secure");
+            assertThat(logoutCookie).doesNotContainIgnoringCase("Secure");
+        }
+    }
 }

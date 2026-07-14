@@ -1,76 +1,95 @@
 package com.GDP.GDP.controller;
 
+import java.time.Duration; 
 
+import org.springframework.beans.factory.annotation.Value; 
+import org.springframework.http.HttpHeaders; 
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.GDP.GDP.dto.auth.LoginRequest;
 import com.GDP.GDP.dto.auth.RegisterRequest;
 import com.GDP.GDP.service.AuthService;
 
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-
-
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final String TOKEN_COOKIE_NAME = "token";
+    private static final Duration COOKIE_DURATION = Duration.ofDays(1);
+
     private final AuthService authService;
+
+    @Value("${app.auth.cookie.secure:false}")
+    private boolean secureCookie;
+
+    @Value("${app.auth.cookie.same-site:Lax}")
+    private String sameSite;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
-
     @PostMapping("/register")
     public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
-        String token = authService.register(request.pseudo(), request.email(), request.password());
-        ResponseCookie cookie = ResponseCookie.from("token", token)
-                                .httpOnly(true) //empeche l'accées via js cote cli
-                                .secure(false) //bloque envoie pas dns http
-                                .sameSite("Lax") //permet requête cross site(microservice)
-                                .path("/")  //cookie accessible sur les routes commencant par:
-                                .maxAge(86400) //durée de vie du cookie
-                                .build();   
-        return ResponseEntity.noContent()
-                .header(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString())
+
+        String token = authService.register(
+                request.pseudo(),
+                request.email(),
+                request.password()
+        );
+
+        return ResponseEntity
+                .status(201)
+                .header(HttpHeaders.SET_COOKIE, buildTokenCookie(token, COOKIE_DURATION).toString())
                 .build();
     }
-    
+
     @PostMapping("/login")
     public ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request) {
-        String token = authService.login(request.email(), request.password());
-        ResponseCookie cookie = ResponseCookie.from("token", token)
-                                .httpOnly(true) //empeche l'accées via js cote cli
-                                .secure(false) //bloque envoie pas dns http
-                                .sameSite("Lax") //permet requête cross site(microservice)
-                                .path("/")  //cookie accessible sur les routes commencant par:
-                                .maxAge(86400) //durée de vie du cookie
-                                .build();
-        return ResponseEntity.noContent()
-                .header(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString())
+
+        String token = authService.login(
+                request.email(),
+                request.password()
+        );
+
+        return ResponseEntity
+                .noContent()
+                .header(HttpHeaders.SET_COOKIE, buildTokenCookie(token, COOKIE_DURATION).toString())
                 .build();
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
+    public ResponseEntity<Void> logout() {
 
-        ResponseCookie cookie = ResponseCookie.from("token", "")
-            .httpOnly(true)
-            .secure(true)
-            .path("/")
-            .maxAge(0) 
-            .sameSite("None")
-            .build();
-
-        response.addHeader("Set-Cookie", cookie.toString());
-
-        return ResponseEntity.noContent().build();
+        return ResponseEntity
+                .noContent()
+                .header(HttpHeaders.SET_COOKIE, deleteTokenCookie().toString())
+                .build();
     }
-    
+
+    private ResponseCookie buildTokenCookie(String token, Duration duration) {
+
+        return ResponseCookie.from(TOKEN_COOKIE_NAME, token)
+                .httpOnly(true)
+                .secure(secureCookie)
+                .sameSite(sameSite)
+                .path("/")
+                .maxAge(duration)
+                .build();
+    }
+
+    private ResponseCookie deleteTokenCookie() {
+
+        return ResponseCookie.from(TOKEN_COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(secureCookie)
+                .sameSite(sameSite)
+                .path("/")
+                .maxAge(Duration.ZERO)
+                .build();
+    }
 }

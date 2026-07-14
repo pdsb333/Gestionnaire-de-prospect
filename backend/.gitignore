@@ -37,3 +37,4 @@ README_DEV.md
 
 ### env vars (secrets, ne jamais commit) ###
 .env
+/src/main/resources/application-prod.properties

@@ -230,6 +230,36 @@ public class AuthIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
         }
+
+        @Test
+        @DisplayName("401 — Mauvais mot de passe : erreur typée, pas un 500")
+        void tc009_login_shouldReturn401_whenPasswordIsWrong() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(validRegisterRequest())))
+                .andExpect(status().isCreated());
+
+            mockMvc.perform(
+                post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new LoginRequest("userA@mail.com", "mauvaisMotDePasse"))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
+        }
+
+        @Test
+        @DisplayName("401 — Email inconnu : erreur typée, pas un 500")
+        void tc009_login_shouldReturn401_whenEmailUnknown() throws Exception {
+            mockMvc.perform(
+                post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new LoginRequest("inconnu@mail.com", "password123"))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
+        }
     }
 
     // =========================================================================

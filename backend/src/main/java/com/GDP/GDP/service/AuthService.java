@@ -1,11 +1,13 @@
 package com.GDP.GDP.service;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.GDP.GDP.entity.User;
+import com.GDP.GDP.exception.InvalidCredentialsException;
 import com.GDP.GDP.repository.UserRepository;
 
 @Service
@@ -44,12 +46,17 @@ public class AuthService {
 
 
     public String login(String email, String password) {
-        authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
-        );
+        try {
+            authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
+        } catch (BadCredentialsException ex) {
+            throw new InvalidCredentialsException();
+        }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+                .orElseThrow(InvalidCredentialsException::new);
 
-        return jwtService.generateToken(user.getEmail());    }
+        return jwtService.generateToken(user.getEmail());
+    }
 }

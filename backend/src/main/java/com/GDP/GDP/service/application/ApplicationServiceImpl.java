@@ -62,11 +62,12 @@ public class ApplicationServiceImpl implements ApplicationService{
             application.getHistoryOfRelaunches().remove(application.getInitialApplicationDate());
             application.setInitialApplicationDate(request.initialApplicationDate());
             application.addRelaunch(request.initialApplicationDate());
-            application.setDateRelaunch(computeRelaunch(request.initialApplicationDate(), application.getOffer().getRelaunchFrequency()));
-        } else {
-            application.setDateRelaunch(request.dateRelaunch());
         }
-        
+
+        // dateRelaunch is always derived from initialApplicationDate + relaunchFrequency, same as
+        // create() — never trust a client-supplied relaunch date.
+        application.setDateRelaunch(computeRelaunch(request.initialApplicationDate(), application.getOffer().getRelaunchFrequency()));
+
         return ApplicationResponse.fromEntity(application);
     }
 

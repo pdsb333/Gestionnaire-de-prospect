@@ -78,7 +78,7 @@ class ApplicationServiceImplTest {
         @Test
         @DisplayName("should compute relaunch date from jobOffer relaunchFrequency")
         void shouldComputeRelaunchDateFromFrequency() {
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
             when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -93,7 +93,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should fallback to plusDays(1) when relaunchFrequency is 0")
         void shouldFallbackToOneDayWhenFrequencyIsZero() {
             jobOffer.setRelaunchFrequency(0);
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
             when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -107,7 +107,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should fallback to plusDays(1) when relaunchFrequency is negative")
         void shouldFallbackToOneDayWhenFrequencyIsNegative() {
             jobOffer.setRelaunchFrequency(-5);
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
             when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -120,7 +120,7 @@ class ApplicationServiceImplTest {
         @Test
         @DisplayName("should add initialApplicationDate to relaunch history")
         void shouldAddInitialDateToRelaunchHistory() {
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
             when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -133,7 +133,7 @@ class ApplicationServiceImplTest {
         @Test
         @DisplayName("should call save() exactly once")
         void shouldCallSaveOnce() {
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
             when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -146,7 +146,7 @@ class ApplicationServiceImplTest {
         @Test
         @DisplayName("should throw ResourceNotFoundException when jobOffer does not exist")
         void shouldThrowWhenJobOfferNotFound() {
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(jobOfferRepository.findById(99L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> applicationService.create(request, 99L, user))
@@ -163,7 +163,7 @@ class ApplicationServiceImplTest {
         @Test
         @DisplayName("should throw ResourceNotFoundException when business does not belong to user")
         void shouldThrowWhenBusinessNotOwnedByUser() {
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
             when(verifyBusinessForUser.verifyBusiness(1L, user))
                 .thenThrow(new ResourceNotFoundException("Business", 1L));
@@ -184,16 +184,16 @@ class ApplicationServiceImplTest {
     class Update {
 
         @Test
-        @DisplayName("should update only dateRelaunch when initialApplicationDate is unchanged")
-        void shouldUpdateOnlyRelaunchDateWhenInitialDateUnchanged() {
-            LocalDateTime newRelaunch = initialDate.plusDays(14);
-            ApplicationRequest request = new ApplicationRequest(initialDate, newRelaunch);
+        @DisplayName("should recompute dateRelaunch from frequency when initialApplicationDate is unchanged, never trusting client input")
+        void shouldRecomputeRelaunchDateWhenInitialDateUnchanged() {
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
                 .thenReturn(Optional.of(application));
 
             ApplicationResponse response = applicationService.update(request, 1L, user);
 
-            assertThat(response.dateRelaunch()).isEqualTo(newRelaunch);
+            // relaunchFrequency = 7 → initialDate + 7 days, regardless of what was requested before
+            assertThat(response.dateRelaunch()).isEqualTo(initialDate.plusDays(7));
             assertThat(response.initialApplicationDate()).isEqualTo(initialDate);
             assertThat(response.historyOfRelaunches()).containsExactly(initialDate);
         }
@@ -202,7 +202,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should replace old initialDate with new one in relaunch history")
         void shouldReplaceOldInitialDateInHistoryWhenInitialDateChanges() {
             LocalDateTime newInitialDate = LocalDateTime.of(2024, 2, 1, 10, 0);
-            ApplicationRequest request = new ApplicationRequest(newInitialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(newInitialDate);
             when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
                 .thenReturn(Optional.of(application));
 
@@ -216,7 +216,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should recompute dateRelaunch via computeRelaunch when initialApplicationDate changes")
         void shouldRecomputeRelaunchDateWhenInitialDateChanges() {
             LocalDateTime newInitialDate = LocalDateTime.of(2024, 2, 1, 10, 0);
-            ApplicationRequest request = new ApplicationRequest(newInitialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(newInitialDate);
             when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
                 .thenReturn(Optional.of(application));
 
@@ -230,7 +230,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should update initialApplicationDate when it changes")
         void shouldUpdateInitialApplicationDateWhenChanged() {
             LocalDateTime newInitialDate = LocalDateTime.of(2024, 2, 1, 10, 0);
-            ApplicationRequest request = new ApplicationRequest(newInitialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(newInitialDate);
             when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
                 .thenReturn(Optional.of(application));
 
@@ -242,7 +242,7 @@ class ApplicationServiceImplTest {
         @Test
         @DisplayName("should not call save() explicitly — Hibernate dirty checking")
         void shouldNotCallSaveExplicitly() {
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
                 .thenReturn(Optional.of(application));
 
@@ -254,7 +254,7 @@ class ApplicationServiceImplTest {
         @Test
         @DisplayName("should throw ResourceNotFoundException when application does not exist or does not belong to user")
         void shouldThrowWhenApplicationNotFound() {
-            ApplicationRequest request = new ApplicationRequest(initialDate, relaunchDate);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
             when(applicationRepository.findByIdAndOffer_Business_UserId(99L, user.getId()))
                 .thenReturn(Optional.empty());
 

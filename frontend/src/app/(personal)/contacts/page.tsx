@@ -17,7 +17,7 @@ import { Users, Search } from "lucide-react"
 const ALL = "Tout les contacts"
 
 export default function ContactsPage() {
-    const { businesses } = useGDP()
+    const { businesses, deleteProfessional } = useGDP()
     const [search, setSearch] = useState("")
     const [selectedBiz, setSelectedBiz] = useState(ALL)
 
@@ -90,7 +90,7 @@ export default function ContactsPage() {
                             <p className="text-xs text-muted-foreground px-1">{p.businessName}</p>
                             <ContactRow
                                 pro={p}
-                                onDelete={(id) => console.log("delete", id)}
+                                onDelete={deleteProfessional}
                             />
                         </div>
                     ))}

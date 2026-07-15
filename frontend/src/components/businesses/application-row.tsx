@@ -32,11 +32,13 @@ export function ApplicationRow({
   businessId,
   jobOffer,
 }: ApplicationRowProps) {
-  const { markApplicationRelaunched } = useGDP()
+  const { markApplicationRelaunched, deleteJobOffer } = useGDP()
 
   const [expanded, setExpanded] = useState(false)
   const [isMarking, setIsMarking] = useState(false)
   const [markError, setMarkError] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const relaunchDate = application.dateRelaunch
     ? (() => {
@@ -77,6 +79,20 @@ export function ApplicationRow({
       )
     } finally {
       setIsMarking(false)
+    }
+  }
+
+  const handleDeleteOffer = async () => {
+    setDeleteError(null)
+    setIsDeleting(true)
+
+    try {
+      await deleteJobOffer(jobOffer.id)
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : "Échec de la suppression"
+      )
+      setIsDeleting(false)
     }
   }
 
@@ -171,7 +187,12 @@ export function ApplicationRow({
         {expanded && (
           <div className="flex flex-col gap-4 border-t border-border px-4 py-4">
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" className="text-destructive">
+              <Button
+                variant="ghost"
+                className="text-destructive"
+                onClick={handleDeleteOffer}
+                disabled={isDeleting}
+              >
                 <span className="sr-only">
                   Supprimer l&apos;offre
                 </span>
@@ -180,6 +201,10 @@ export function ApplicationRow({
 
               <EditOfferDialog offer={jobOffer} />
             </div>
+
+            {deleteError && (
+              <p className="text-[10px] text-destructive">{deleteError}</p>
+            )}
 
             <div className="flex flex-col gap-2 rounded-md border border-border p-3">
               <p className="text-xs font-medium">

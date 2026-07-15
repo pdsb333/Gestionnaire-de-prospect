@@ -185,6 +185,19 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     [fetchBusinesses]
   )
 
+  const deleteJobOffer = useCallback(
+    async (id: number) => {
+      try {
+        await apiClient.deleteJobOffer(id)
+        await fetchBusinesses()
+      } catch (err) {
+        console.error("Failed to delete job offer:", err)
+        throw err
+      }
+    },
+    [fetchBusinesses]
+  )
+
   //Application mutations
   const addApplication = useCallback(
     async (
@@ -282,6 +295,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     updateBusiness,
     addJobOffer,
     updateJobOffer,
+    deleteJobOffer,
     addApplication,
     updateApplication,
     markApplicationRelaunched,

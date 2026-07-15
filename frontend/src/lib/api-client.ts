@@ -93,6 +93,12 @@ class ApiClient {
     })
   }
 
+  async deleteJobOffer(id: number): Promise<void> {
+    return this.request<void>(`/api/joboffer/delete/${id}`, {
+      method: "DELETE",
+    })
+  }
+
   // ============ APPLICATIONS ============
   async createApplication(
     jobOfferId: number,

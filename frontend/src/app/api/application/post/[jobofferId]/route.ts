@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { apiRouteError } from "@/lib/api-route-error";
 
 export async function POST(req: Request, { params }: { params: Promise<{ jobofferId: string }> }) {
   const payload = await req.json();
@@ -47,6 +48,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ joboffe
 
     return NextResponse.json(await res.json());
   } catch (err) {
-    console.log(err);
+    return apiRouteError(err);
   }
 }

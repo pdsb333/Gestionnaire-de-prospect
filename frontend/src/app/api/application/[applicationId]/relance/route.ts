@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { apiRouteError } from "@/lib/api-route-error";
 
 export async function POST(req: Request, { params }: { params: Promise<{ applicationId: string }> }) {
   const cookieStore = await cookies();
@@ -44,7 +45,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ applica
 
     return NextResponse.json(await res.json());
   } catch (err) {
-    console.log(err);
-    return NextResponse.json({ message: "Erreur serveur" }, { status: 500 });
+    return apiRouteError(err);
   }
 }

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { apiRouteError } from "@/lib/api-route-error";
 
 export async function DELETE(_req: Request,
     { params }: { params: Promise<{ id: string }> }) {
@@ -39,7 +40,7 @@ export async function DELETE(_req: Request,
         return new NextResponse(null, { status: 204 });
 
     } catch (err) {
-        return err
+        return apiRouteError(err);
     }
 
 }

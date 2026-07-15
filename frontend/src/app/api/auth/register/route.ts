@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiRouteError } from "@/lib/api-route-error";
 
 export async function POST(req: Request) {
     const payload = await req.json();
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
         return response;
 
     } catch (err) {
-        return err;
+        return apiRouteError(err);
     }
 }
 

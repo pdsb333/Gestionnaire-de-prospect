@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { apiRouteError } from "@/lib/api-route-error";
 
 export async function GET() {
 
@@ -7,7 +8,7 @@ export async function GET() {
   const token = cookieStore.get("token")?.value;
 
   if (!token) {
-    return NextResponse.json("Accés refusé");
+    return NextResponse.json({ message: "Non authentifié" }, { status: 401 });
   }
 
   const apiUrl = `${process.env.API_URL}business`;
@@ -44,6 +45,6 @@ export async function GET() {
 
     return NextResponse.json(data);
   } catch (err) {
-    return err
+    return apiRouteError(err);
   }
 }

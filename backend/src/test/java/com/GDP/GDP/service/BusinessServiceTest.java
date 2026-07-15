@@ -92,7 +92,7 @@ class BusinessServiceTest {
             // Arrange
             Business b1 = createBusiness("Entreprise A", "Description A", "Contact A", currentUser);
             Business b2 = createBusiness("Entreprise B", "Description B", "Contact B", currentUser);
-            when(businessRepository.findByUser_Id(userId)).thenReturn(List.of(b1, b2));
+            when(businessRepository.findByUserIdWithJobOffers(userId)).thenReturn(List.of(b1, b2));
 
             // Act
             List<BusinessResponse> result = businessService.getBusinessByUserId(currentUser);
@@ -111,7 +111,8 @@ class BusinessServiceTest {
             Business business = createBusiness("Entreprise A", "Description A", "Contact A", currentUser);
             withJobOffer(business);
             withProfessional(business);
-            when(businessRepository.findByUser_Id(userId)).thenReturn(List.of(business));
+            when(businessRepository.findByUserIdWithJobOffers(userId)).thenReturn(List.of(business));
+            when(businessRepository.findByUserIdWithProfessionals(userId)).thenReturn(List.of(business));
 
             // Act
             List<BusinessResponse> result = businessService.getBusinessByUserId(currentUser);
@@ -131,7 +132,7 @@ class BusinessServiceTest {
         @DisplayName("Should return empty list when user has no businesses")
         void shouldReturnEmptyListWhenUserHasNoBusinesses() {
             // Arrange
-            when(businessRepository.findByUser_Id(userId)).thenReturn(List.of());
+            when(businessRepository.findByUserIdWithJobOffers(userId)).thenReturn(List.of());
 
             // Act
             List<BusinessResponse> result = businessService.getBusinessByUserId(currentUser);

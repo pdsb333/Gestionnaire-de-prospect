@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.GDP.GDP.dto.business.BusinessRequest;
 import com.GDP.GDP.dto.business.BusinessResponse;
@@ -37,8 +38,14 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BusinessResponse> getBusinessByUserId(User user){
-        return businessRepository.findByUser_Id(user.getId())
+        List<Business> businesses = businessRepository.findByUserIdWithJobOffers(user.getId());
+        // Same persistence context as above: this populates professionalsList on the
+        // already-loaded Business instances without an extra query per business.
+        businessRepository.findByUserIdWithProfessionals(user.getId());
+
+        return businesses
                     .stream()
                     .map(BusinessResponse::fromEntity)
                     .collect(Collectors.toList());

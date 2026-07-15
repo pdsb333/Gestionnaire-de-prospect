@@ -152,8 +152,29 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<!-- These need Docker (Testcontainers) via AbstractIntegrationTest, so they
+					     run under failsafe instead; without this exclude they'd also match
+					     surefire's default *Test.java include pattern and run twice. -->
+					<excludes>
+						<exclude>**/integration/**</exclude>
+						<exclude>**/GdpApplicationTests.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>3.2.5</version>
+				<configuration>
+					<!-- Project's integration tests are named *Test.java, not failsafe's
+					     default **/*IT.java, so they need to be included explicitly. -->
+					<includes>
+						<include>**/integration/**Test.java</include>
+						<include>**/GdpApplicationTests.java</include>
+					</includes>
+				</configuration>
 				<executions>
 					<execution>
 					<goals>

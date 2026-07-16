@@ -15,6 +15,7 @@ import com.GDP.GDP.exception.business.BusinessAlreadyExistsException;
 import com.GDP.GDP.repository.BusinessRepository;
 
 @Service
+@Transactional
 public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
 

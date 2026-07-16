@@ -351,6 +351,51 @@ public class OwnershipSecurityTest extends AbstractIntegrationTest {
             assertThat(applicationRepository.findById(applicationAId)).isPresent();
         }
 
+        @Test
+        @DisplayName("PUT /api/application/{id} — User B ne peut pas modifier la démarche de User A")
+        void tc007_userB_shouldNotModify_userA_application() throws Exception {
+            var before = applicationRepository.findById(applicationAId).orElseThrow();
+            var originalInitialDate = before.getInitialApplicationDate();
+
+            String body = """
+                {
+                    "initialApplicationDate":"%s"
+                }
+                """.formatted(originalInitialDate.minusDays(30));
+
+            mockMvc.perform(
+                put("/api/application/{applicationId}", applicationAId)
+                    .with(user(userBDetails))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+                .andExpect(status().isNotFound());
+
+            var unchanged = applicationRepository.findById(applicationAId).orElseThrow();
+            assertThat(unchanged.getInitialApplicationDate()).isEqualTo(originalInitialDate);
+        }
+
+        @Test
+        @DisplayName("POST /api/application/{id}/relance — User B ne peut pas relancer la démarche de User A")
+        void tc007_userB_shouldNotRelaunch_userA_application() throws Exception {
+            var originalDateRelaunch = applicationRepository.findById(applicationAId).orElseThrow().getDateRelaunch();
+            Integer originalHistorySize = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM application_history_of_relaunches WHERE application_id = ?",
+                Integer.class, applicationAId);
+
+            mockMvc.perform(
+                post("/api/application/{applicationId}/relance", applicationAId)
+                    .with(user(userBDetails))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+            var unchanged = applicationRepository.findById(applicationAId).orElseThrow();
+            assertThat(unchanged.getDateRelaunch()).isEqualTo(originalDateRelaunch);
+            Integer unchangedHistorySize = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM application_history_of_relaunches WHERE application_id = ?",
+                Integer.class, applicationAId);
+            assertThat(unchangedHistorySize).isEqualTo(originalHistorySize);
+        }
+
         // ── Vérification globale post-attaque ─────────────────────────────────
 
         @Test

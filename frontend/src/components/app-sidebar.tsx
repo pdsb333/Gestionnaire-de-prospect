@@ -21,8 +21,6 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar"
-import { useGDP } from "@/lib/store"
-//import { getOverdueRelaunches, getTodayRelaunches } from "@/lib/store"
 
 const navItems = [
   { title: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
@@ -33,10 +31,6 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const { businesses } = useGDP()
-  //const overdueCount = getOverdueRelaunches(businesses).length
-  //const todayCount = getTodayRelaunches(businesses).length
- // const urgentCount = overdueCount + todayCount
 
   return (
     <Sidebar>
@@ -71,11 +65,6 @@ export function AppSidebar() {
                           <item.icon className="h-4 w-4" />
                           <span>{item.title}</span>
                         </span>
-                       {/*{item.href === "/relaunches" && urgentCount > 0 && (
-                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-[10px] font-medium text-background">
-                            {urgentCount}
-                          </span>
-                        )}  */}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

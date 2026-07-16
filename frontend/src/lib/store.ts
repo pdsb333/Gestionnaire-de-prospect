@@ -5,8 +5,6 @@ import type {  Auth, Business, JobOffer, Application, Professional } from "./typ
 
 export interface GDPStore {
     businesses: Business[]
-    isAuthenticated: boolean
-    user: {email: string} | null
     loading: boolean
     error: string | null
     login: (credentials: Omit<Auth, "pseudo">) => Promise<void>

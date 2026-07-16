@@ -41,12 +41,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isConfigured, setIsConfigured] = useState(() => apiClient.isConfigured())
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState<{email: string} | null>(null)
   const [businesses, setBusinesses] = useState<Business[]>([])
-  
-
-
   const fetchBusinesses = useCallback(async () => {
     if (!apiClient.isConfigured()) {
       setIsConfigured(false)
@@ -78,9 +73,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
         try {
             setError(null)
             setLoading(true)
-            const response = await apiClient.login(credentials)
-            setIsAuthenticated(true)
-            setUser({ email: credentials.email })
+            await apiClient.login(credentials)
             // GDPProvider is mounted once at the app root (not remounted per-route), so the
             // effect-driven fetch already ran (and failed, unauthenticated) before this login —
             // refetch now that a session cookie exists.
@@ -105,8 +98,6 @@ export function GDPProvider({ children }: { children: ReactNode }) {
             setError(null)
             setLoading(true)
             await apiClient.register(data)
-            setIsAuthenticated(true)
-            setUser({ email: data.email })
             await fetchBusinesses()
         } catch (err) {
             console.error("Register failed:", err)
@@ -290,8 +281,6 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     businesses,
     loading,
     error,
-    user,
-    isAuthenticated, 
     login,
     register,
     addBusiness,

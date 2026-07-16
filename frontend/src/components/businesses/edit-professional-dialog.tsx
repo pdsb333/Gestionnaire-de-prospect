@@ -25,14 +25,13 @@ export function EditProfessionalDialog({ professional, open, onOpenChange }: {
         job: professional.job,
         contact: professional.contact,
       }}
-      onSubmit={(values) => {
-        updateProfessional(professional.id, {
+      onSubmit={async (values) => {
+        await updateProfessional(professional.id, {
           lastName: values.lastname,
           firstName: values.firstname,
           job: values.job,
           contact: values.contact,
         })
-        onOpenChange(false)
       }}
     />
   )

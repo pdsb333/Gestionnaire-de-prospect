@@ -34,13 +34,12 @@ export function EditBusinessDialog({ business }: EditBusinessDialogProps) {
           description: business.description,
           contact: business.recruitmentServiceContact,
         }}
-        onSubmit={(values) => {
-          updateBusiness(business.id, {
+        onSubmit={async (values) => {
+          await updateBusiness(business.id, {
             name: values.name,
             description: values.description,
             recruitmentServiceContact: values.contact,
           })
-          setOpen(false)
         }}
       />
     </>

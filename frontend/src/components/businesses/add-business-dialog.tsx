@@ -23,13 +23,12 @@ export function AddBusinessDialog() {
         onOpenChange={setOpen}
         title="Nouvelle entreprise"
         submitLabel="Créer"
-        onSubmit={(values) => {
-          addBusiness({
+        onSubmit={async (values) => {
+          await addBusiness({
             name: values.name,
             description: values.description,
             recruitmentServiceContact: values.contact,
           })
-          setOpen(false)
         }}
       />
     </>

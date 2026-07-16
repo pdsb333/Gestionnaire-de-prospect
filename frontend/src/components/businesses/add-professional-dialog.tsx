@@ -23,25 +23,46 @@ export function AddProfessionalDialog({ businessId }: { businessId: number }) {
   const [lastName, setLastName] = useState("")
   const [job, setJob] = useState("")
   const [contact, setContact] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!firstName.trim() || !lastName.trim()) return
-    addProfessional(businessId, {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      job: job.trim(),
-      contact: contact.trim(),
-    })
+  const resetAll = () => {
     setFirstName("")
     setLastName("")
     setJob("")
     setContact("")
-    setOpen(false)
+    setError(null)
+  }
+
+  const handleOpenChange = (val: boolean) => {
+    setOpen(val)
+    if (!val) resetAll()
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!firstName.trim() || !lastName.trim()) return
+
+    setError(null)
+    setIsSubmitting(true)
+    try {
+      await addProfessional(businessId, {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        job: job.trim(),
+        contact: contact.trim(),
+      })
+      setOpen(false)
+      resetAll()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de l'ajout du contact")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={<Button variant="default" size="sm" className="gap-1.5" />}>
           <Plus className="h-3.5 w-3.5" />
           Contact
@@ -89,9 +110,14 @@ export function AddProfessionalDialog({ businessId }: { businessId: number }) {
               placeholder="Email, LinkedIn, telephone"
             />
           </div>
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
           <DialogFooter>
-            <Button type="submit">Ajouter</Button>
-            <DialogClose render={<Button type="button" variant="destructive" size="sm" className="gap-1.5" />}>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Ajout..." : "Ajouter"}
+            </Button>
+            <DialogClose render={<Button type="button" variant="destructive" size="sm" className="gap-1.5" disabled={isSubmitting} />}>
               Annuler
             </DialogClose>
           </DialogFooter>

@@ -26,7 +26,7 @@ interface BusinessFormDialogProps {
   title: string
   submitLabel: string
   defaultValues?: Partial<BusinessFormValues>
-  onSubmit: (values: BusinessFormValues) => void
+  onSubmit: (values: BusinessFormValues) => Promise<void>
 }
 
 export function BusinessFormDialog({
@@ -40,21 +40,34 @@ export function BusinessFormDialog({
   const [name, setName] = useState(defaultValues.name ?? "")
   const [description, setDescription] = useState(defaultValues.description ?? "")
   const [contact, setContact] = useState(defaultValues.contact ?? "")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setName(defaultValues.name ?? "")
     setDescription(defaultValues.description ?? "")
     setContact(defaultValues.contact ?? "")
+    setError(null)
   }, [open])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    onSubmit({
-      name: name.trim(),
-      description: description.trim(),
-      contact: contact.trim(),
-    })
+
+    setError(null)
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        name: name.trim(),
+        description: description.trim(),
+        contact: contact.trim(),
+      })
+      onOpenChange(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de l'enregistrement")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -93,11 +106,16 @@ export function BusinessFormDialog({
               placeholder="Email ou téléphone"
             />
           </div>
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
+            <DialogClose render={<Button type="button" variant="outline" disabled={isSubmitting} />}>
               Annuler
             </DialogClose>
-            <Button type="submit">{submitLabel}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Enregistrement..." : submitLabel}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

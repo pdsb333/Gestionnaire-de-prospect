@@ -26,7 +26,7 @@ export interface JobOffer {
   name: string;
   link: string;
   relaunchFrequency: number;
-  application: Application;
+  application: Application | null;
 }
 
 export interface Application {

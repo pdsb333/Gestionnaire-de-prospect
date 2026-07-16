@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useGDP } from "@/lib/store"
+import type { JobOffer, Application } from "@/lib/types"
 
 // Renvoie le lundi 00:00 de la semaine courante
 function startOfWeek(reference: Date) {
@@ -37,12 +38,15 @@ export function RecentApplications() {
   const applicationsThisWeek = businesses
     .flatMap((business) =>
       (business.jobOffersList ?? [])
-        .filter((offer) => offer.application?.initialApplicationDate)
+        .filter(
+          (offer): offer is JobOffer & { application: Application } =>
+            offer.application != null && !!offer.application.initialApplicationDate
+        )
         .map((offer) => ({
           businessId: business.id,
           businessName: business.name,
           jobOfferName: offer.name,
-          initialApplicationDate: offer.application!.initialApplicationDate,
+          initialApplicationDate: offer.application.initialApplicationDate,
         }))
     )
     .filter((app) => {

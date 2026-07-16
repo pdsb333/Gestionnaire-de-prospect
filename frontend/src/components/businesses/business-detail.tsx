@@ -15,6 +15,7 @@ import { AddOfferDialog } from "./add-offer-dialog"
 import {AddApplicationDialog} from "./add-application-dialog"
 import { AddProfessionalDialog } from "./add-professional-dialog"
 import { ContactRow } from "./contact-row"
+import type { JobOffer, Application } from "@/lib/types"
 
 export function BusinessDetail({ businessId }: { businessId: number }) {
   const { businesses, deleteBusiness, deleteProfessional} = useGDP()
@@ -58,7 +59,9 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
   })
 
   // Offres ayant une candidature associée
-  const offersWithApplication = jobOffersList.filter((j) => !!j.application)
+  const offersWithApplication = jobOffersList.filter(
+    (j): j is JobOffer & { application: Application } => j.application != null
+  )
 
   // Offres sans candidature
   const offersWithoutApplication = jobOffersList.filter((j) => !j.application)
@@ -181,7 +184,7 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
             offersWithApplication.map((offer) => (
               <ApplicationRow
                 key={offer.id}
-                application={offer.application!}
+                application={offer.application}
                 businessId={business.id}
                 jobOffer={offer}
               />

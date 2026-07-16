@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select"
 import { useGDP } from "@/lib/store"
 import { cn } from "@/lib/utils"
+import type { JobOffer, Application } from "@/lib/types"
 
 type RelaunchStatus = "pending" | "today" | "overdue"
 
@@ -69,16 +70,16 @@ export default function RelaunchesPage() {
   // Reconstruction de toutes les candidatures depuis businesses -> jobOffersList -> application
   const allApps: RelaunchApp[] = businesses.flatMap((business) =>
     (business.jobOffersList ?? [])
-      .filter((offer) => offer.application != null)
+      .filter((offer): offer is JobOffer & { application: Application } => offer.application != null)
       .map((offer) => ({
-        id: offer.application!.id,
+        id: offer.application.id,
         businessId: business.id,
         businessName: business.name,
         jobOfferId: offer.id,
         jobOfferName: offer.name,
-        dateRelaunch: offer.application!.dateRelaunch,
-        historyOfRelaunches: offer.application!.historyOfRelaunches ?? [],
-        status: computeRelaunchStatus(offer.application!.dateRelaunch),
+        dateRelaunch: offer.application.dateRelaunch,
+        historyOfRelaunches: offer.application.historyOfRelaunches ?? [],
+        status: computeRelaunchStatus(offer.application.dateRelaunch),
       }))
   )
 

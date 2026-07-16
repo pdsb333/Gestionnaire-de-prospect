@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useGDP } from "@/lib/store"
 import { cn } from "@/lib/utils"
+import type { JobOffer, Application } from "@/lib/types"
 
 export function UpcomingRelaunches() {
   const { businesses } = useGDP()
@@ -16,12 +17,15 @@ export function UpcomingRelaunches() {
   const upcomingRelaunches = businesses
     .flatMap((business) =>
       (business.jobOffersList ?? [])
-        .filter((offer) => offer.application?.dateRelaunch)
+        .filter(
+          (offer): offer is JobOffer & { application: Application } =>
+            offer.application != null && !!offer.application.dateRelaunch
+        )
         .map((offer) => ({
           businessId: business.id,
           businessName: business.name,
           jobOfferName: offer.name,
-          dateRelaunch: offer.application!.dateRelaunch,
+          dateRelaunch: offer.application.dateRelaunch,
         }))
     )
     .sort((a, b) => (a.dateRelaunch > b.dateRelaunch ? 1 : -1))

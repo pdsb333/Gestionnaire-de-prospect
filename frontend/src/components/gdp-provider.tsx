@@ -47,51 +47,6 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   
 
 
-  const login = useCallback(
-    async (credentials: Omit<Auth, "pseudo">) => {
-        if (!apiClient.isConfigured()) {
-            throw new Error("API not configured")
-        }
-        try {
-            setError(null)
-            setLoading(true)
-            const response = await apiClient.login(credentials)
-            setIsAuthenticated(true)
-            setUser({ email: credentials.email })
-
-        } catch (err) {
-            console.error("Login failed:", err)
-            setError(err instanceof Error ? err.message : "Login failed")
-            throw err
-        } finally {
-            setLoading(false)
-        }
-    }, 
-    []
-  )
-
-  const register = useCallback(
-    async (data: Auth) => {
-        if (!apiClient.isConfigured()) {
-            throw new Error("API not configured")
-        }
-        try {
-            setError(null)
-            setLoading(true)
-            await apiClient.register(data)
-            setIsAuthenticated(true)
-            setUser({ email: data.email })
-        } catch (err) {
-            console.error("Register failed:", err)
-            setError(err instanceof Error ? err.message : "Register failed")
-            throw err
-        } finally {
-            setLoading(false)
-        }
-    },
-    []
-  )
-
   const fetchBusinesses = useCallback(async () => {
     if (!apiClient.isConfigured()) {
       setIsConfigured(false)
@@ -114,6 +69,55 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     fetchBusinesses()
   }, [fetchBusinesses])
+
+  const login = useCallback(
+    async (credentials: Omit<Auth, "pseudo">) => {
+        if (!apiClient.isConfigured()) {
+            throw new Error("API not configured")
+        }
+        try {
+            setError(null)
+            setLoading(true)
+            const response = await apiClient.login(credentials)
+            setIsAuthenticated(true)
+            setUser({ email: credentials.email })
+            // GDPProvider is mounted once at the app root (not remounted per-route), so the
+            // effect-driven fetch already ran (and failed, unauthenticated) before this login —
+            // refetch now that a session cookie exists.
+            await fetchBusinesses()
+        } catch (err) {
+            console.error("Login failed:", err)
+            setError(err instanceof Error ? err.message : "Login failed")
+            throw err
+        } finally {
+            setLoading(false)
+        }
+    },
+    [fetchBusinesses]
+  )
+
+  const register = useCallback(
+    async (data: Auth) => {
+        if (!apiClient.isConfigured()) {
+            throw new Error("API not configured")
+        }
+        try {
+            setError(null)
+            setLoading(true)
+            await apiClient.register(data)
+            setIsAuthenticated(true)
+            setUser({ email: data.email })
+            await fetchBusinesses()
+        } catch (err) {
+            console.error("Register failed:", err)
+            setError(err instanceof Error ? err.message : "Register failed")
+            throw err
+        } finally {
+            setLoading(false)
+        }
+    },
+    [fetchBusinesses]
+  )
 
   // Business mutation
 

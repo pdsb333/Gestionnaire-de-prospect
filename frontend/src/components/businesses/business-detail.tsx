@@ -27,8 +27,6 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
     router.push("/businesses")
   }
 
-
-  console.log(businesses);
   if (!business) {
     return (
       <div className="flex flex-col items-center justify-center py-20 p-6">

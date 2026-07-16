@@ -40,8 +40,6 @@ export async function GET() {
     }
 
     const data = await res.json();
-    console.log("Runtime:", process.env.NEXT_RUNTIME);
-
 
     return NextResponse.json(data);
   } catch (err) {

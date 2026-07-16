@@ -305,7 +305,7 @@ class ApplicationServiceImplTest {
     }
 
     /* ---------------------------------------------------------
-        TESTS MARK RELAUNCHED (precision only — full coverage in a later pass)
+        TESTS MARK RELAUNCHED
     --------------------------------------------------------- */
 
     @Nested
@@ -323,6 +323,106 @@ class ApplicationServiceImplTest {
             assertThat(response.dateRelaunch().getNano() % 1000).isZero();
             assertThat(response.historyOfRelaunches())
                 .allSatisfy(date -> assertThat(date.getNano() % 1000).isZero());
+        }
+
+        @Test
+        @DisplayName("should throw ResourceNotFoundException when application does not exist or does not belong to user")
+        void shouldThrowWhenApplicationNotFound() {
+            when(applicationRepository.findByIdAndOffer_Business_UserId(99L, user.getId()))
+                .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> applicationService.markRelaunched(99L, user))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(ex -> {
+                    ResourceNotFoundException e = (ResourceNotFoundException) ex;
+                    assertThat(e.getResource()).isEqualTo("Application");
+                    assertThat(e.getIdentifier()).isEqualTo(99L);
+                });
+        }
+
+        @Test
+        @DisplayName("should add the current time to relaunch history")
+        void shouldAddCurrentTimeToHistory() {
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            LocalDateTime before = LocalDateTime.now();
+            ApplicationResponse response = applicationService.markRelaunched(1L, user);
+            LocalDateTime after = LocalDateTime.now();
+
+            assertThat(response.historyOfRelaunches()).hasSize(2); // initialDate (from setUp) + new relaunch
+            assertThat(response.historyOfRelaunches())
+                .anySatisfy(date -> assertThat(date).isBetween(before, after));
+        }
+
+        @Test
+        @DisplayName("should compute dateRelaunch from now + relaunchFrequency")
+        void shouldComputeDateRelaunchFromNowPlusFrequency() {
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            LocalDateTime before = LocalDateTime.now();
+            ApplicationResponse response = applicationService.markRelaunched(1L, user);
+            LocalDateTime after = LocalDateTime.now();
+
+            // relaunchFrequency = 7
+            assertThat(response.dateRelaunch()).isBetween(before.plusDays(7), after.plusDays(7));
+        }
+
+        @Test
+        @DisplayName("should fallback to plusDays(1) when relaunchFrequency is 0")
+        void shouldFallbackToOneDayWhenFrequencyIsZero() {
+            jobOffer.setRelaunchFrequency(0);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            LocalDateTime before = LocalDateTime.now();
+            ApplicationResponse response = applicationService.markRelaunched(1L, user);
+            LocalDateTime after = LocalDateTime.now();
+
+            assertThat(response.dateRelaunch()).isBetween(before.plusDays(1), after.plusDays(1));
+        }
+
+        @Test
+        @DisplayName("should fallback to plusDays(1) when relaunchFrequency is negative")
+        void shouldFallbackToOneDayWhenFrequencyIsNegative() {
+            jobOffer.setRelaunchFrequency(-5);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            LocalDateTime before = LocalDateTime.now();
+            ApplicationResponse response = applicationService.markRelaunched(1L, user);
+            LocalDateTime after = LocalDateTime.now();
+
+            assertThat(response.dateRelaunch()).isBetween(before.plusDays(1), after.plusDays(1));
+        }
+
+        @Test
+        @DisplayName("should not change initialApplicationDate")
+        void shouldNotChangeInitialApplicationDate() {
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse response = applicationService.markRelaunched(1L, user);
+
+            assertThat(response.initialApplicationDate()).isEqualTo(initialDate);
+        }
+
+        @Test
+        @DisplayName("should accumulate successive relaunches in history instead of overwriting")
+        void shouldAccumulateSuccessiveRelaunches() {
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse first = applicationService.markRelaunched(1L, user);
+            ApplicationResponse second = applicationService.markRelaunched(1L, user);
+
+            // the second call's history must still contain everything the first call had
+            // (a Set never loses entries via add(), even if two calls happen to land on the
+            // same truncated instant)
+            assertThat(second.historyOfRelaunches()).containsAll(first.historyOfRelaunches());
+            assertThat(second.historyOfRelaunches().size())
+                .isGreaterThanOrEqualTo(first.historyOfRelaunches().size());
         }
     }
 }

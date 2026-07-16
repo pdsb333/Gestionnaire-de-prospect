@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.GDP.GDP.entity.User;
+import com.GDP.GDP.exception.EmailAlreadyExistsException;
 import com.GDP.GDP.exception.InvalidCredentialsException;
 import com.GDP.GDP.repository.UserRepository;
 
@@ -32,6 +33,10 @@ public class AuthService {
 
 
     public String register(String pseudo, String email, String password) {
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException(email);
+        }
+
         User user = new User(
                 pseudo,
                 email,

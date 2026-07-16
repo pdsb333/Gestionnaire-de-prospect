@@ -138,7 +138,9 @@ public class AuthIntegrationTest extends AbstractIntegrationTest {
                 post("/api/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(toJson(new RegisterRequest("autreNom", "userA@mail.com", "autrePass"))))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_EXISTS"));
 
             // Aucun doublon
             assertThat(userRepository.findAll()).hasSize(1);

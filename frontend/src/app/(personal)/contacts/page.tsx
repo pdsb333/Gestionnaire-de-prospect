@@ -22,7 +22,7 @@ export default function ContactsPage() {
     const [selectedBiz, setSelectedBiz] = useState(ALL)
 
     const contacts = businesses.flatMap((biz) =>
-        biz.professionalsList.map((p) => ({ ...p, businessName: biz.name, businessId: biz.id }))
+        (biz.professionalsList ?? []).map((p) => ({ ...p, businessName: biz.name, businessId: biz.id }))
     )
 
     const filtered = contacts.filter((p) => {

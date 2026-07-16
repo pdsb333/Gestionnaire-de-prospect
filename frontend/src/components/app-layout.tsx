@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { GDPProvider } from "@/components/gdp-provider"
+import { GlobalStatusBanner } from "@/components/global-status-banner"
 import { Separator } from "@/components/ui/separator"
 
 export function AppLayout({ children }: { children: ReactNode }) {
@@ -18,6 +19,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <span className="text-sm text-muted-foreground font-medium">Gestion De Prospection</span>
           </header>
           <main className="flex-1 overflow-x-hidden">
+            <GlobalStatusBanner />
             {children}
           </main>
         </SidebarInset>

@@ -276,18 +276,18 @@ class ApplicationServiceImplTest {
     class Delete {
 
         @Test
-        @DisplayName("should call deleteById with the correct id")
-        void shouldCallDeleteByIdWithCorrectId() {
+        @DisplayName("should call delete with the found entity")
+        void shouldCallDeleteWithFoundEntity() {
             when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
                 .thenReturn(Optional.of(application));
 
             applicationService.delete(1L, user);
 
-            verify(applicationRepository).deleteById(1L);
+            verify(applicationRepository).delete(application);
         }
 
         @Test
-        @DisplayName("should not call deleteById when application does not exist or does not belong to user")
+        @DisplayName("should not call delete when application does not exist or does not belong to user")
         void shouldNotDeleteWhenApplicationNotFound() {
             when(applicationRepository.findByIdAndOffer_Business_UserId(99L, user.getId()))
                 .thenReturn(Optional.empty());
@@ -300,7 +300,7 @@ class ApplicationServiceImplTest {
                     assertThat(e.getIdentifier()).isEqualTo(99L);
                 });
 
-            verify(applicationRepository, never()).deleteById(any());
+            verify(applicationRepository, never()).delete(any());
         }
     }
 }

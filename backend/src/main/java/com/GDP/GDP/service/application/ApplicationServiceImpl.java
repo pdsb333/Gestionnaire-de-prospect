@@ -73,8 +73,8 @@ public class ApplicationServiceImpl implements ApplicationService{
 
     @Override
     public void delete(Long id, User user){
-        verifyApplication(id, user);
-        applicationRepository.deleteById(id);
+        Application application = verifyApplication(id, user);
+        applicationRepository.delete(application);
     }
 
     @Override

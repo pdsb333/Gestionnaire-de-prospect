@@ -1,6 +1,7 @@
 package com.GDP.GDP.service.application;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,30 +44,31 @@ public class ApplicationServiceImpl implements ApplicationService{
                                 .orElseThrow(()-> new ResourceNotFoundException("JobOffer", jobOfferId));
         verifyBusinessForUser.verifyBusiness(jobOffer.getBusiness().getId(), user);
 
-        LocalDateTime dateRelaunch = computeRelaunch(request.initialApplicationDate(), jobOffer.getRelaunchFrequency());
+        // Truncate to microseconds (Postgres timestamp(6)) so the in-memory value used for
+        // historyOfRelaunches Set membership matches exactly what gets persisted and reloaded.
+        LocalDateTime initialDate = request.initialApplicationDate().truncatedTo(ChronoUnit.MICROS);
+        LocalDateTime dateRelaunch = computeRelaunch(initialDate, jobOffer.getRelaunchFrequency());
 
-        Application application = new Application(
-                    request.initialApplicationDate(),
-                    dateRelaunch,
-                    jobOffer);
-        application.addRelaunch(request.initialApplicationDate());
-        
+        Application application = new Application(initialDate, dateRelaunch, jobOffer);
+        application.addRelaunch(initialDate);
+
         return ApplicationResponse.fromEntity(applicationRepository.save(application));
     }
 
-    @Override 
+    @Override
     public ApplicationResponse update(ApplicationRequest request, Long id, User user){
         Application application = verifyApplication(id, user);
-        
-        if(!application.getInitialApplicationDate().equals(request.initialApplicationDate())){
+        LocalDateTime newInitialDate = request.initialApplicationDate().truncatedTo(ChronoUnit.MICROS);
+
+        if(!application.getInitialApplicationDate().equals(newInitialDate)){
             application.getHistoryOfRelaunches().remove(application.getInitialApplicationDate());
-            application.setInitialApplicationDate(request.initialApplicationDate());
-            application.addRelaunch(request.initialApplicationDate());
+            application.setInitialApplicationDate(newInitialDate);
+            application.addRelaunch(newInitialDate);
         }
 
         // dateRelaunch is always derived from initialApplicationDate + relaunchFrequency, same as
         // create() — never trust a client-supplied relaunch date.
-        application.setDateRelaunch(computeRelaunch(request.initialApplicationDate(), application.getOffer().getRelaunchFrequency()));
+        application.setDateRelaunch(computeRelaunch(newInitialDate, application.getOffer().getRelaunchFrequency()));
 
         return ApplicationResponse.fromEntity(application);
     }
@@ -81,7 +83,7 @@ public class ApplicationServiceImpl implements ApplicationService{
     public ApplicationResponse markRelaunched(Long id, User user) {
         Application application = verifyApplication(id, user);
     
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MICROS);
         application.addRelaunch(now);
         application.setDateRelaunch(computeRelaunch(now, application.getOffer().getRelaunchFrequency()));
     

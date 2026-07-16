@@ -303,4 +303,26 @@ class ApplicationServiceImplTest {
             verify(applicationRepository, never()).delete(any());
         }
     }
+
+    /* ---------------------------------------------------------
+        TESTS MARK RELAUNCHED (precision only — full coverage in a later pass)
+    --------------------------------------------------------- */
+
+    @Nested
+    @DisplayName("markRelaunched()")
+    class MarkRelaunched {
+
+        @Test
+        @DisplayName("should truncate LocalDateTime.now() to microsecond precision (Postgres timestamp(6))")
+        void shouldTruncateNowToMicrosecondPrecision() {
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse response = applicationService.markRelaunched(1L, user);
+
+            assertThat(response.dateRelaunch().getNano() % 1000).isZero();
+            assertThat(response.historyOfRelaunches())
+                .allSatisfy(date -> assertThat(date.getNano() % 1000).isZero());
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.GDP.GDP.entity;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -29,11 +30,11 @@ public abstract class Prospect {
     public Prospect(){}
     
     public Prospect(LocalDateTime initialApplicationDate, LocalDateTime dateRelaunch){
-        this.initialApplicationDate = initialApplicationDate;
-        this.dateRelaunch = dateRelaunch;
-        this.historyOfRelaunches = new LinkedHashSet<>();    
+        this.initialApplicationDate = truncate(initialApplicationDate);
+        this.dateRelaunch = truncate(dateRelaunch);
+        this.historyOfRelaunches = new LinkedHashSet<>();
     }
-        
+
     // Getters and Setters
     public Long getId(){
         return id;
@@ -45,7 +46,7 @@ public abstract class Prospect {
         return initialApplicationDate;
     }
     public void setInitialApplicationDate(LocalDateTime initialApplicationDate){
-        this.initialApplicationDate = initialApplicationDate;   
+        this.initialApplicationDate = truncate(initialApplicationDate);
     }
 
     public LocalDateTime getDateRelaunch(){
@@ -53,7 +54,7 @@ public abstract class Prospect {
     }
 
     public void setDateRelaunch(LocalDateTime dateRelaunch){
-        this.dateRelaunch = dateRelaunch;
+        this.dateRelaunch = truncate(dateRelaunch);
     }
 
     public Set<LocalDateTime> getHistoryOfRelaunches(){
@@ -61,6 +62,13 @@ public abstract class Prospect {
     }
 
     public void addRelaunch(LocalDateTime date) {
-        this.historyOfRelaunches.add(date);
+        this.historyOfRelaunches.add(truncate(date));
+    }
+
+    // Columns are timestamp(6) (microsecond precision) in Postgres; truncating here keeps
+    // in-memory equals()/hashCode() (used by the historyOfRelaunches Set) consistent with what
+    // gets persisted and reloaded, instead of drifting on sub-microsecond JVM clock noise.
+    private static LocalDateTime truncate(LocalDateTime dateTime) {
+        return dateTime == null ? null : dateTime.truncatedTo(ChronoUnit.MICROS);
     }
 }

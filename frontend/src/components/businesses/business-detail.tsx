@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
 import { isPast, parseISO, isToday } from "date-fns"
 import { ArrowLeft, ExternalLink, Mail, User, AlertCircle, Pencil, TrashIcon, Trash} from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,12 +16,14 @@ import { AddOfferDialog } from "./add-offer-dialog"
 import {AddApplicationDialog} from "./add-application-dialog"
 import { AddProfessionalDialog } from "./add-professional-dialog"
 import { ContactRow } from "./contact-row"
+import { ConfirmDeleteDialog } from "./confirm-delete-dialog"
 import type { JobOffer, Application } from "@/lib/types"
 
 export function BusinessDetail({ businessId }: { businessId: number }) {
   const { businesses, deleteBusiness, deleteProfessional} = useGDP()
   const business = businesses.find((b) => b.id === businessId)
   const router = useRouter();
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const handleDelete = async () => {
     await deleteBusiness(businessId)
@@ -99,13 +102,21 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
             {/* Modifier le business */}
             <EditBusinessDialog business={business}/>
             {/* Supprimer le business*/}
-            <Button variant="ghost" className="text-destructive" size="lg" onClick={handleDelete}>
+            <Button variant="ghost" className="text-destructive" size="lg" onClick={() => setDeleteOpen(true)}>
                 <span className="sr-only">
                   Supprimer l&apos;entreprise
                 </span>
                 <Trash className="h-4 w-4" />
               </Button>
           </div>
+
+          <ConfirmDeleteDialog
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            title="Supprimer cette entreprise ?"
+            description={`"${business.name}" ainsi que toutes ses offres, candidatures et contacts associés seront définitivement supprimés. Cette action est irréversible.`}
+            onConfirm={handleDelete}
+          />
 
           
         </div>

@@ -7,15 +7,17 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Pencil, TrashIcon, User } from "lucide-react"
 import { EditProfessionalDialog } from "./edit-professional-dialog"
+import { ConfirmDeleteDialog } from "./confirm-delete-dialog"
 import { Professional } from "@/lib/types"
 
 interface ContactRowProps {
   pro: Professional
-  onDelete: (id: number) => void
+  onDelete: (id: number) => Promise<void>
 }
 
 export function ContactRow({ pro, onDelete }: ContactRowProps) {
   const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   return (
     <>
@@ -51,7 +53,7 @@ export function ContactRow({ pro, onDelete }: ContactRowProps) {
                     <Pencil className="h-4 w-4" />
                     Modifier
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDelete(pro.id)} variant="destructive">
+                  <DropdownMenuItem closeOnClick={false} onClick={() => setDeleteOpen(true)} variant="destructive">
                     <TrashIcon className="h-4 w-4" />
                     Supprimer
                   </DropdownMenuItem>
@@ -67,6 +69,13 @@ export function ContactRow({ pro, onDelete }: ContactRowProps) {
         professional={pro}
         open={editOpen}
         onOpenChange={setEditOpen}
+      />
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Supprimer ce contact ?"
+        description={`"${pro.firstName} ${pro.lastName}" sera définitivement supprimé.`}
+        onConfirm={() => onDelete(pro.id)}
       />
     </>
   )

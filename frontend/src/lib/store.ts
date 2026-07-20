@@ -20,7 +20,7 @@ export interface GDPStore {
     markApplicationRelaunched: (id: number) => Promise<void>
     addProfessional: (businessId: number, data: Omit<Professional, "id">) => void
     updateProfessional: (id: number, data: Partial<Professional>) => void
-    deleteProfessional: (id: number) => void
+    deleteProfessional: (id: number) => Promise<void>
 }
 
 export const GDPContext = createContext<GDPStore | null>(null)

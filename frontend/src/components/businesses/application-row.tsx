@@ -20,6 +20,7 @@ import { useGDP } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import type { Application, JobOffer } from "@/lib/types"
 import { EditOfferDialog } from "./edit-offer-dialog"
+import { ConfirmDeleteDialog } from "./confirm-delete-dialog"
 
 interface ApplicationRowProps {
   application: Application
@@ -37,8 +38,7 @@ export function ApplicationRow({
   const [expanded, setExpanded] = useState(false)
   const [isMarking, setIsMarking] = useState(false)
   const [markError, setMarkError] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const relaunchDate = application.dateRelaunch
     ? (() => {
@@ -83,17 +83,7 @@ export function ApplicationRow({
   }
 
   const handleDeleteOffer = async () => {
-    setDeleteError(null)
-    setIsDeleting(true)
-
-    try {
-      await deleteJobOffer(jobOffer.id)
-    } catch (err) {
-      setDeleteError(
-        err instanceof Error ? err.message : "Échec de la suppression"
-      )
-      setIsDeleting(false)
-    }
+    await deleteJobOffer(jobOffer.id)
   }
 
   return (
@@ -190,8 +180,7 @@ export function ApplicationRow({
               <Button
                 variant="ghost"
                 className="text-destructive"
-                onClick={handleDeleteOffer}
-                disabled={isDeleting}
+                onClick={() => setDeleteOpen(true)}
               >
                 <span className="sr-only">
                   Supprimer l&apos;offre
@@ -202,9 +191,13 @@ export function ApplicationRow({
               <EditOfferDialog offer={jobOffer} />
             </div>
 
-            {deleteError && (
-              <p className="text-[10px] text-destructive">{deleteError}</p>
-            )}
+            <ConfirmDeleteDialog
+              open={deleteOpen}
+              onOpenChange={setDeleteOpen}
+              title="Supprimer cette offre ?"
+              description={`"${jobOffer.name || "Offre inconnue"}" ainsi que sa candidature associée seront définitivement supprimés.`}
+              onConfirm={handleDeleteOffer}
+            />
 
             <div className="flex flex-col gap-2 rounded-md border border-border p-3">
               <p className="text-xs font-medium">

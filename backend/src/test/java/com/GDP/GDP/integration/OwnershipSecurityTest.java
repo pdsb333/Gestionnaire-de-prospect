@@ -437,4 +437,62 @@ public class OwnershipSecurityTest extends AbstractIntegrationTest {
             assertThat(businessRepository.findById(businessAId)).isPresent();
         }
     }
+
+    // =========================================================================
+    // TC-008 — User B ne peut pas créer de ressource sous une entité de User A
+    // =========================================================================
+    @Nested
+    @DisplayName("TC-008 — Isolation en création : User B ne peut pas créer sous les entités de User A")
+    class TC008_CreateIsolation {
+
+        @Test
+        @DisplayName("POST /api/job-offers/{businessId} — User B ne peut pas créer d'offre sous le business de User A")
+        void tc008_userB_shouldNotCreate_jobOffer_underUserA_business() throws Exception {
+            mockMvc.perform(
+                post("/api/job-offers/{businessId}", businessAId)
+                    .with(user(userBDetails))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new JobOfferRequest("Spy Offer", "https://spy", 1))))
+                .andExpect(status().isNotFound());
+
+            assertThat(jobOfferRepository.findAll()).hasSize(1); // seulement celle de User A créée en setUp
+        }
+
+        @Test
+        @DisplayName("POST /api/professionals/{businessId} — User B ne peut pas créer de contact sous le business de User A")
+        void tc008_userB_shouldNotCreate_professional_underUserA_business() throws Exception {
+            mockMvc.perform(
+                post("/api/professionals/{businessId}", businessAId)
+                    .with(user(userBDetails))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(toJson(new ProfessionalRequest("Spy", "Spy", "Spy", "spy@mail.com"))))
+                .andExpect(status().isNotFound());
+
+            assertThat(professionalRepository.findAll()).hasSize(1); // seulement celui de User A créé en setUp
+        }
+
+        @Test
+        @DisplayName("POST /api/application/{jobOfferId} — User B ne peut pas créer de démarche sous l'offre de User A")
+        void tc008_userB_shouldNotCreate_application_underUserA_jobOffer() throws Exception {
+            // Nouvelle offre de User A sans démarche, pour isoler ce test sur la vérification
+            // d'ownership plutôt que sur la détection de doublon (jobOfferAId en a déjà une,
+            // créée en setUp).
+            Long jobOfferWithoutApplicationId = createJobOffer(businessAId, "Dev Python", userADetails);
+
+            String body = """
+                {
+                    "initialApplicationDate":"%s"
+                }
+                """.formatted(LocalDateTime.now().minusDays(1));
+
+            mockMvc.perform(
+                post("/api/application/{jobOfferId}", jobOfferWithoutApplicationId)
+                    .with(user(userBDetails))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+                .andExpect(status().isNotFound());
+
+            assertThat(applicationRepository.findAll()).hasSize(1); // uniquement celle de User A créée en setUp
+        }
+    }
 }

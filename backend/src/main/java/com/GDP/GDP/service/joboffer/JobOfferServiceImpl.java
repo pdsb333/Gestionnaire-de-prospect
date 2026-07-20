@@ -3,6 +3,7 @@ package com.GDP.GDP.service.joboffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.GDP.GDP.components.VerifyBusinessForUser;
 import com.GDP.GDP.dto.joboffer.JobOfferRequest;
@@ -12,8 +13,6 @@ import com.GDP.GDP.entity.JobOffer;
 import com.GDP.GDP.entity.User;
 import com.GDP.GDP.exception.ResourceNotFoundException;
 import com.GDP.GDP.repository.JobOfferRepository;
-
-import jakarta.transaction.Transactional;
 
 @Service
 @Transactional

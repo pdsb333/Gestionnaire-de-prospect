@@ -7,7 +7,6 @@ import java.time.temporal.ChronoUnit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.GDP.GDP.components.VerifyBusinessForUser;
 import com.GDP.GDP.dto.application.ApplicationRequest;
 import com.GDP.GDP.dto.application.ApplicationResponse;
 import com.GDP.GDP.entity.Application;
@@ -24,11 +23,9 @@ import com.GDP.GDP.repository.JobOfferRepository;
 public class ApplicationServiceImpl implements ApplicationService{
     private final ApplicationRepository applicationRepository;
     private final JobOfferRepository jobOfferRepository;
-    private final VerifyBusinessForUser verifyBusinessForUser;
 
-    public ApplicationServiceImpl(ApplicationRepository applicationRepository, VerifyBusinessForUser verifyBusinessForUser, JobOfferRepository jobOfferRepository){
+    public ApplicationServiceImpl(ApplicationRepository applicationRepository, JobOfferRepository jobOfferRepository){
         this.applicationRepository = applicationRepository;
-        this.verifyBusinessForUser = verifyBusinessForUser;
         this.jobOfferRepository = jobOfferRepository;
     }
 
@@ -49,9 +46,11 @@ public class ApplicationServiceImpl implements ApplicationService{
 
     @Override
     public ApplicationResponse create(ApplicationRequest request, Long jobOfferId, User user){
-        JobOffer jobOffer = jobOfferRepository.findById(jobOfferId)
+        // Ownership-scoped lookup: a jobOfferId that exists but belongs to another user must be
+        // indistinguishable from one that doesn't exist at all, so ownership never leaks via the
+        // error message.
+        JobOffer jobOffer = jobOfferRepository.findByIdAndBusiness_UserId(jobOfferId, user.getId())
                                 .orElseThrow(()-> new ResourceNotFoundException("JobOffer", jobOfferId));
-        verifyBusinessForUser.verifyBusiness(jobOffer.getBusiness().getId(), user);
 
         if (jobOffer.getApplication() != null) {
             throw new ApplicationAlreadyExistsException(jobOfferId);

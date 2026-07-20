@@ -1,6 +1,5 @@
 package com.GDP.GDP.service;
 
-import com.GDP.GDP.components.VerifyBusinessForUser;
 import com.GDP.GDP.dto.application.ApplicationRequest;
 import com.GDP.GDP.dto.application.ApplicationResponse;
 import com.GDP.GDP.entity.*;
@@ -38,9 +37,6 @@ class ApplicationServiceImplTest {
 
     @Mock
     private JobOfferRepository jobOfferRepository;
-
-    @Mock
-    private VerifyBusinessForUser verifyBusinessForUser;
 
     @InjectMocks
     private ApplicationServiceImpl applicationService;
@@ -82,8 +78,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should compute relaunch date from jobOffer relaunchFrequency")
         void shouldComputeRelaunchDateFromFrequency() {
             ApplicationRequest request = new ApplicationRequest(initialDate);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
 
             ApplicationResponse response = applicationService.create(request, 1L, user);
@@ -97,8 +92,7 @@ class ApplicationServiceImplTest {
         void shouldFallbackToOneDayWhenFrequencyIsZero() {
             jobOffer.setRelaunchFrequency(0);
             ApplicationRequest request = new ApplicationRequest(initialDate);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
 
             ApplicationResponse response = applicationService.create(request, 1L, user);
@@ -111,8 +105,7 @@ class ApplicationServiceImplTest {
         void shouldFallbackToOneDayWhenFrequencyIsNegative() {
             jobOffer.setRelaunchFrequency(-5);
             ApplicationRequest request = new ApplicationRequest(initialDate);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
 
             ApplicationResponse response = applicationService.create(request, 1L, user);
@@ -124,8 +117,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should add initialApplicationDate to relaunch history")
         void shouldAddInitialDateToRelaunchHistory() {
             ApplicationRequest request = new ApplicationRequest(initialDate);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
 
             ApplicationResponse response = applicationService.create(request, 1L, user);
@@ -137,8 +129,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should call save() exactly once")
         void shouldCallSaveOnce() {
             ApplicationRequest request = new ApplicationRequest(initialDate);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
 
             applicationService.create(request, 1L, user);
@@ -150,7 +141,7 @@ class ApplicationServiceImplTest {
         @DisplayName("should throw ResourceNotFoundException when jobOffer does not exist")
         void shouldThrowWhenJobOfferNotFound() {
             ApplicationRequest request = new ApplicationRequest(initialDate);
-            when(jobOfferRepository.findById(99L)).thenReturn(Optional.empty());
+            when(jobOfferRepository.findByIdAndBusiness_UserId(99L, user.getId())).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> applicationService.create(request, 99L, user))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -164,15 +155,21 @@ class ApplicationServiceImplTest {
         }
 
         @Test
-        @DisplayName("should throw ResourceNotFoundException when business does not belong to user")
-        void shouldThrowWhenBusinessNotOwnedByUser() {
+        @DisplayName("should throw ResourceNotFoundException('JobOffer') — not leak that it belongs to another user's business")
+        void shouldThrowWhenJobOfferBelongsToAnotherUser() {
             ApplicationRequest request = new ApplicationRequest(initialDate);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user))
-                .thenThrow(new ResourceNotFoundException("Business", 1L));
+            // The jobOffer exists, but not for this user — the scoped query must not find it,
+            // and the resulting error must read exactly like "jobOffer doesn't exist" (no
+            // leak of the foreign business id via a different exception/message).
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> applicationService.create(request, 1L, user))
-                .isInstanceOf(ResourceNotFoundException.class);
+                .isInstanceOf(ResourceNotFoundException.class)
+                .satisfies(ex -> {
+                    ResourceNotFoundException e = (ResourceNotFoundException) ex;
+                    assertThat(e.getResource()).isEqualTo("JobOffer");
+                    assertThat(e.getIdentifier()).isEqualTo(1L);
+                });
 
             verify(applicationRepository, never()).save(any());
         }
@@ -182,8 +179,7 @@ class ApplicationServiceImplTest {
         void shouldSucceedWhenInitialDateIsToday() {
             LocalDateTime todayAtMidnight = LocalDate.now().atStartOfDay();
             ApplicationRequest request = new ApplicationRequest(todayAtMidnight);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
             when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
 
             ApplicationResponse response = applicationService.create(request, 1L, user);
@@ -196,8 +192,7 @@ class ApplicationServiceImplTest {
         void shouldThrowWhenInitialDateIsInTheFuture() {
             LocalDateTime tomorrow = LocalDate.now().plusDays(1).atStartOfDay();
             ApplicationRequest request = new ApplicationRequest(tomorrow);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
 
             assertThatThrownBy(() -> applicationService.create(request, 1L, user))
                 .isInstanceOf(FutureDateException.class);
@@ -210,8 +205,7 @@ class ApplicationServiceImplTest {
         void shouldThrowWhenJobOfferAlreadyHasApplication() {
             jobOffer.setApplication(application);
             ApplicationRequest request = new ApplicationRequest(initialDate);
-            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
-            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
 
             assertThatThrownBy(() -> applicationService.create(request, 1L, user))
                 .isInstanceOf(ApplicationAlreadyExistsException.class);

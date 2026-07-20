@@ -3,6 +3,7 @@ package com.GDP.GDP.service;
 import com.GDP.GDP.components.VerifyBusinessForUser;
 import com.GDP.GDP.dto.joboffer.JobOfferRequest;
 import com.GDP.GDP.dto.joboffer.JobOfferResponse;
+import com.GDP.GDP.entity.Application;
 import com.GDP.GDP.entity.Business;
 import com.GDP.GDP.entity.JobOffer;
 import com.GDP.GDP.entity.User;
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -238,6 +240,42 @@ class JobOfferServiceImplTest {
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("JobOffer")
                 .hasMessageContaining("888");
+        }
+
+        @Test
+        @DisplayName("Should recompute the linked Application's dateRelaunch when relaunchFrequency changes")
+        void update_WhenRelaunchFrequencyChanges_RecomputesLinkedApplicationDateRelaunch() {
+            // Given
+            JobOffer existingJobOffer = createJobOffer(1L, "Dev Java", "https://example.com", 7, testBusiness);
+            LocalDateTime initialApplicationDate = LocalDateTime.of(2024, 1, 1, 10, 0);
+            Application application = new Application(initialApplicationDate, initialApplicationDate.plusDays(7), existingJobOffer);
+            existingJobOffer.setApplication(application);
+
+            JobOfferRequest updateRequest = createJobOfferRequest("Dev Java", "https://example.com", 14);
+
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, testUser.getId()))
+                .thenReturn(Optional.of(existingJobOffer));
+
+            // When
+            jobOfferService.updateJobOffer(updateRequest, 1L, testUser);
+
+            // Then
+            assertThat(application.getDateRelaunch()).isEqualTo(initialApplicationDate.plusDays(14));
+        }
+
+        @Test
+        @DisplayName("Should not fail when the JobOffer has no linked Application")
+        void update_WhenNoLinkedApplication_DoesNotFail() {
+            // Given
+            JobOffer existingJobOffer = createJobOffer(1L, "Dev Java", "https://example.com", 7, testBusiness);
+            JobOfferRequest updateRequest = createJobOfferRequest("Dev Java", "https://example.com", 14);
+
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, testUser.getId()))
+                .thenReturn(Optional.of(existingJobOffer));
+
+            // When & Then
+            assertThat(jobOfferService.updateJobOffer(updateRequest, 1L, testUser).relaunchFrequency())
+                .isEqualTo(14);
         }
     }
 

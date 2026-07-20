@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.GDP.GDP.components.VerifyBusinessForUser;
 import com.GDP.GDP.dto.joboffer.JobOfferRequest;
 import com.GDP.GDP.dto.joboffer.JobOfferResponse;
+import com.GDP.GDP.entity.Application;
 import com.GDP.GDP.entity.Business;
 import com.GDP.GDP.entity.JobOffer;
 import com.GDP.GDP.entity.User;
@@ -50,6 +51,15 @@ public class JobOfferServiceImpl implements JobOfferService {
         jobOffer.setName(request.name());
         jobOffer.setLink(request.link());
         jobOffer.setRelaunchFrequency(request.relaunchFrequency());
+
+        // Keep the already-created Application's relaunch date in sync with the new cadence —
+        // mirrors the formula in ApplicationServiceImpl.computeRelaunch.
+        Application application = jobOffer.getApplication();
+        if (application != null) {
+            int frequency = request.relaunchFrequency() < 1 ? 1 : request.relaunchFrequency();
+            application.setDateRelaunch(application.getInitialApplicationDate().plusDays(frequency));
+        }
+
         return JobOfferResponse.fromEntity(jobOffer);
     }
 

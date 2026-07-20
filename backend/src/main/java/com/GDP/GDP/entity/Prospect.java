@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.OrderBy;
 
 @MappedSuperclass
 public abstract class Prospect {
@@ -24,7 +25,11 @@ public abstract class Prospect {
     @Column(nullable=true)
     private LocalDateTime dateRelaunch;
 
+    // Guarantees chronological (ascending) iteration order on every load, so consumers relying
+    // on array order — e.g. the frontend's "most recent first" display via .reverse() — get a
+    // stable result instead of whatever order the DB happens to return.
     @ElementCollection
+    @OrderBy
     private Set<LocalDateTime> historyOfRelaunches = new LinkedHashSet<>();
 
     public Prospect(){}

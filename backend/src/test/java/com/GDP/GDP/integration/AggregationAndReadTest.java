@@ -1,6 +1,8 @@
 package com.GDP.GDP.integration;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
@@ -271,6 +273,62 @@ public class AggregationAndReadTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].jobOffersList.length()").value(2))
                 .andExpect(jsonPath("$[0].professionalsList.length()").value(2));
+        }
+    }
+
+    @Nested
+    @DisplayName("Historique des relances — ordre chronologique")
+    class HistoryOfRelaunchesOrdering {
+
+        private Long createApplicationAndGetId(Long jobOfferId, CustomUserDetails as) throws Exception {
+            String body = """
+                {
+                    "initialApplicationDate":"%s"
+                }
+                """.formatted(LocalDateTime.now().minusDays(30));
+
+            MvcResult result = mockMvc.perform(
+                post("/api/application/{jobOfferId}", jobOfferId)
+                    .with(user(as))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body))
+                .andExpect(status().isCreated())
+                .andReturn();
+            return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+        }
+
+        @Test
+        @DisplayName("historyOfRelaunches est retourné en ordre chronologique croissant après plusieurs relances")
+        void tc005_historyOfRelaunches_shouldBeReturnedInChronologicalOrder() throws Exception {
+            Long businessId = createBusiness("Acme", userDetails);
+            Long jobOfferId = createJobOffer(businessId, "Dev Java", userDetails);
+            Long applicationId = createApplicationAndGetId(jobOfferId, userDetails);
+
+            for (int i = 0; i < 3; i++) {
+                mockMvc.perform(
+                    post("/api/application/{applicationId}/relance", applicationId)
+                        .with(user(userDetails)))
+                    .andExpect(status().isOk());
+                Thread.sleep(5); // garantit des timestamps distincts (troncature à la microseconde)
+            }
+
+            MvcResult result = mockMvc.perform(
+                get("/api/business")
+                    .with(user(userDetails))
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+            var history = objectMapper.readTree(result.getResponse().getContentAsString())
+                .get(0).get("jobOffersList").get(0).get("application").get("historyOfRelaunches");
+
+            assertThat(history.isArray()).isTrue();
+            assertThat(history.size()).isEqualTo(4); // date initiale + 3 relances
+
+            List<LocalDateTime> dates = new ArrayList<>();
+            history.forEach(node -> dates.add(LocalDateTime.parse(node.asText())));
+
+            assertThat(dates).isSorted();
         }
     }
 

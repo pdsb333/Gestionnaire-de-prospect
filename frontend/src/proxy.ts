@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { parseJwt } from "@/lib/parseJWT";
 
-const protectedRoutes = [ "/dashboard", "/businesses", "/contacts" ];
+const protectedRoutes = [ "/dashboard", "/businesses", "/contacts", "/relaunches" ];
 const authRoutes = ["/connexion", "/inscription"];
 
 export default function proxy(req: NextRequest) {
@@ -39,5 +39,6 @@ export const config = {
         "/inscription",
         "/businesses/:path*",
         "/contacts/:path*",
+        "/relaunches/:path*",
     ],
 };

@@ -213,9 +213,15 @@ class BusinessServiceTest {
         }
 
         @Test
-        @DisplayName("Should create business with optional description")
-        void shouldCreateBusinessWithOptionalDescription() {
-            // Arrange
+        @DisplayName("Should not defensively re-validate description — that's @Valid's job at the controller boundary")
+        void shouldNotDefensivelyValidateDescription() {
+            // description is @NotBlank on BusinessRequest (rejected as 400 before this service
+            // method is ever called in production — see BusinessFeatureTest's
+            // createBusiness_shouldReturnBadRequest_whenDescriptionIsBlank). This unit test calls
+            // the service directly, bypassing @Valid entirely, to document that the service layer
+            // itself has no redundant null-check and simply trusts what it's given — per the
+            // "validate only at system boundaries" convention, not because null is a real
+            // production input.
             BusinessRequest request = createBusinessRequest("Entreprise A", null, "Contact");
             when(businessRepository.existsByNameAndUser_Id("Entreprise A", userId)).thenReturn(false);
             when(businessRepository.save(any(Business.class)))

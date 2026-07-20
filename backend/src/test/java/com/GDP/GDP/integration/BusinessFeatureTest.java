@@ -139,7 +139,17 @@ public class BusinessFeatureTest extends AbstractIntegrationTest {
         void createBusiness_shouldReturnUnauthorized_whenUserNotAuthenticated() throws Exception{
             mockMvc.perform(buildPost(validRequest()))
                         .andExpect(status().isUnauthorized());
-                        
+
+            assertThat(businessRepository.findAll()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should return 400 when description is blank")
+        void createBusiness_shouldReturnBadRequest_whenDescriptionIsBlank() throws Exception {
+            mockMvc.perform(buildPost(new BusinessRequest("A", "", "A_serviceContact"), createUser()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+
             assertThat(businessRepository.findAll()).isEmpty();
         }
     }

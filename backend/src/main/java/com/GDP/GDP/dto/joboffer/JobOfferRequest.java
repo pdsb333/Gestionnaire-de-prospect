@@ -5,9 +5,10 @@ import org.hibernate.validator.constraints.URL;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public record JobOfferRequest(
-    @NotBlank String name,
-    @NotBlank @URL String link,
+    @NotBlank @Size(max = 255) String name,
+    @NotBlank @Size(max = 255) @URL String link,
     @Min(1) @NotNull Integer relaunchFrequency
 ){}

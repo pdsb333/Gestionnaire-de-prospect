@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +66,16 @@ public class ApplicationServiceImpl implements ApplicationService{
         Application application = new Application(initialDate, dateRelaunch, jobOffer);
         application.addRelaunch(initialDate);
 
-        return ApplicationResponse.fromEntity(applicationRepository.save(application));
+        try {
+            return ApplicationResponse.fromEntity(applicationRepository.save(application));
+        } catch (DataIntegrityViolationException e) {
+            // The jobOffer.getApplication() check above isn't atomic with this insert: two
+            // concurrent creates on the same jobOffer can both pass it before either commits.
+            // The DB's unique constraint on job_offer_id is the real guard in that race — this
+            // just makes the loser's error consistent with the non-racy case instead of a
+            // generic DATA_INTEGRITY_VIOLATION.
+            throw new ApplicationAlreadyExistsException(jobOfferId);
+        }
     }
 
     @Override

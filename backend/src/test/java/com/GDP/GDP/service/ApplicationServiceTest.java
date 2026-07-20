@@ -212,6 +212,21 @@ class ApplicationServiceImplTest {
 
             verify(applicationRepository, never()).save(any());
         }
+
+        @Test
+        @DisplayName("should translate a DataIntegrityViolationException from save() into ApplicationAlreadyExistsException")
+        void shouldTranslateDataIntegrityViolation_intoApplicationAlreadyExistsException() {
+            // Simulates the race window between the jobOffer.getApplication() check and the
+            // insert: two concurrent creates on the same jobOffer both pass the check, and the
+            // DB's unique constraint on job_offer_id is what actually catches the loser.
+            ApplicationRequest request = new ApplicationRequest(initialDate);
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, user.getId())).thenReturn(Optional.of(jobOffer));
+            when(applicationRepository.save(any(Application.class)))
+                .thenThrow(new org.springframework.dao.DataIntegrityViolationException("duplicate key"));
+
+            assertThatThrownBy(() -> applicationService.create(request, 1L, user))
+                .isInstanceOf(ApplicationAlreadyExistsException.class);
+        }
     }
 
     /* ---------------------------------------------------------

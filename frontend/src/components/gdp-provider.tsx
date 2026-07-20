@@ -26,11 +26,7 @@ function ApiNotConfigured() {
           </p>
           <div className="rounded-md bg-muted p-3 font-mono text-sm space-y-1">
             <div>NEXT_PUBLIC_API_BASE_URL</div>
-            <div>NEXT_PUBLIC_API_TOKEN <span className="text-muted-foreground">(optionnel)</span></div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Allez dans <strong>Settings</strong> (en haut à droite) → <strong>Vars</strong> pour ajouter ces variables.
-          </p>
         </CardContent>
       </Card>
     </div>

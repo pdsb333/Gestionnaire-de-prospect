@@ -232,3 +232,14 @@ Avant de lancer le projet, assurez-vous d'avoir démarré la base PostgreSQL loc
    ```bash
    ./mvnw spring-boot:run
    ```
+
+---
+
+## 🚀 8. Déploiement & profil `prod`
+
+`application-prod.properties` existe mais n'est **jamais chargé automatiquement** : Spring Boot n'active un profil que si `SPRING_PROFILES_ACTIVE` est défini. Ce fichier étant volontairement gitignoré (il ne doit jamais être commité avec de vraies valeurs), c'est à l'hébergeur choisi (Render/Railway/Fly/etc.) de définir la variable d'environnement `SPRING_PROFILES_ACTIVE=prod` au déploiement — sans quoi les overrides prod (cookie `secure=true`, Swagger désactivé, SQL logging désactivé, CORS sur le vrai domaine du front) ne s'appliquent jamais et l'app tourne avec la config dev.
+
+Avant le premier déploiement réel :
+1. Remplir `url.front` dans `application-prod.properties` avec le vrai domaine du frontend (actuellement un placeholder `TODO`).
+2. Définir `SPRING_PROFILES_ACTIVE=prod` dans la config de l'hébergeur.
+3. Fournir `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`/`JWT_SECRET` de prod via les variables d'environnement de l'hébergeur (pas via un fichier `.env` committé).

@@ -5,6 +5,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.GDP.GDP.entity.User;
 import com.GDP.GDP.exception.EmailAlreadyExistsException;
@@ -12,6 +13,7 @@ import com.GDP.GDP.exception.InvalidCredentialsException;
 import com.GDP.GDP.repository.UserRepository;
 
 @Service
+@Transactional
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -50,6 +52,7 @@ public class AuthService {
     }
 
 
+    @Transactional(readOnly = true)
     public String login(String email, String password) {
         try {
             authManager.authenticate(

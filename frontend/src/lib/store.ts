@@ -9,17 +9,17 @@ export interface GDPStore {
     error: string | null
     login: (credentials: Omit<Auth, "pseudo">) => Promise<void>
     register: (data: Auth) => Promise<void>
-    addBusiness: (b: Omit<Business, "id" | "jobOffersList" | "professionalsList">) => void
+    addBusiness: (b: Omit<Business, "id" | "jobOffersList" | "professionalsList">) => Promise<void>
     deleteBusiness: (id:number) => Promise<void>
-    updateBusiness:(id:number, data: Partial<Business>) => void
+    updateBusiness:(id:number, data: Partial<Business>) => Promise<void>
     addJobOffer: (businessId: number, data: Omit<JobOffer, "application" | "id">) => Promise<JobOffer>
     updateJobOffer: (id: number, data: Partial<JobOffer>) => Promise<JobOffer>
     deleteJobOffer: (id: number) => Promise<void>
-    addApplication: (jobofferId: number, data: Omit<Application, "id" | "historyOfRelaunches" | "dateRelaunch">) => void
-    updateApplication: (id: number, data: Partial<Application>) => void
+    addApplication: (jobofferId: number, data: Omit<Application, "id" | "historyOfRelaunches" | "dateRelaunch">) => Promise<void>
+    updateApplication: (id: number, data: Partial<Application>) => Promise<void>
     markApplicationRelaunched: (id: number) => Promise<void>
-    addProfessional: (businessId: number, data: Omit<Professional, "id">) => void
-    updateProfessional: (id: number, data: Partial<Professional>) => void
+    addProfessional: (businessId: number, data: Omit<Professional, "id">) => Promise<void>
+    updateProfessional: (id: number, data: Partial<Professional>) => Promise<void>
     deleteProfessional: (id: number) => Promise<void>
 }
 

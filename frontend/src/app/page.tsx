@@ -49,13 +49,11 @@ export default function Page() {
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button
-              //asChild
               size="lg"
               className="bg-primary-foreground hover:bg-chart-0 text-primary font-semibold px-8"
+              render={<Link href="/inscription" />}
             >
-              <Link href="/inscription">
-                Commencer gratuitement 
-              </Link>
+              Commencer gratuitement
             </Button>
             <Button
               variant="outline"
@@ -222,11 +220,11 @@ export default function Page() {
             Votre recherche d'emploi mérite mieux qu'un tableur
           </h2>
           <Button
-            //asChild
             size="lg"
             className="bg-background hover:bg-chart-2 px-10 font-semibold text-foreground"
+            render={<Link href="/inscription" />}
           >
-            <Link href="/inscription">Commencer maintenant</Link>
+            Commencer maintenant
           </Button>
           <p className="mt-4 text-sm text-muted">
             Gratuit — aucune carte bancaire requise

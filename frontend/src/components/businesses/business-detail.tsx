@@ -34,11 +34,9 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
     return (
       <div className="flex flex-col items-center justify-center py-20 p-6">
         <p className="text-sm text-muted-foreground">Entreprise introuvable</p>
-        <Button variant="ghost" size="sm" className="mt-4">
-          <Link href="/businesses">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Retour
-          </Link>
+        <Button variant="ghost" size="sm" className="mt-4" render={<Link href="/businesses" />}>
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Retour
         </Button>
       </div>
     )
@@ -77,11 +75,9 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       {/* Header */}
       <div className="flex flex-col gap-4">
-        <Button variant="ghost" size="sm" className="w-fit -ml-2 text-muted-foreground">
-          <Link href="/businesses" className="flex items-center">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Entreprises
-          </Link>
+        <Button variant="ghost" size="sm" className="w-fit -ml-2 text-muted-foreground" render={<Link href="/businesses" />}>
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Entreprises
         </Button>
 
         <div className="flex items-start justify-between gap-4">

@@ -150,10 +150,12 @@ export const AuthForm = ({ mode }: AuthFormProps) => {
 
                     <Separator />
 
-                    <Button variant="outline" style={{ width: "100%" }}>
-                        <Link href={isLogin ? "/inscription" : "/connexion"}>
-                            {isLogin ? "Créer un compte" : "J'ai déjà un compte"}
-                        </Link>
+                    <Button
+                        variant="outline"
+                        style={{ width: "100%" }}
+                        render={<Link href={isLogin ? "/inscription" : "/connexion"} />}
+                    >
+                        {isLogin ? "Créer un compte" : "J'ai déjà un compte"}
                     </Button>
                 </CardFooter>
             </form>

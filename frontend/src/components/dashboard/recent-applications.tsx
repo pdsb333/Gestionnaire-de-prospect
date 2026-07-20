@@ -59,10 +59,8 @@ export function RecentApplications() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-lg font-semibold">Candidatures de la semaine</CardTitle>
-        <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-          <Link href="/businesses" className="flex items-center">
-            Tout voir <ArrowRight className="ml-1 h-3 w-3" />
-          </Link>
+        <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" render={<Link href="/businesses" />}>
+          Tout voir <ArrowRight className="ml-1 h-3 w-3" />
         </Button>
       </CardHeader>
       <CardContent className="flex flex-col gap-0">

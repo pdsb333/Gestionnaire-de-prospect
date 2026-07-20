@@ -52,12 +52,13 @@ public class JobOfferServiceImpl implements JobOfferService {
         jobOffer.setLink(request.link());
         jobOffer.setRelaunchFrequency(request.relaunchFrequency());
 
-        // Keep the already-created Application's relaunch date in sync with the new cadence —
-        // mirrors the formula in ApplicationServiceImpl.computeRelaunch.
+        // Keep the already-created Application's relaunch date in sync with the new cadence.
+        // No <1 fallback needed here (unlike ApplicationServiceImpl.computeRelaunch, which
+        // operates on the persisted JobOffer's possibly-stale value): relaunchFrequency comes
+        // straight from a freshly @Min(1)-validated JobOfferRequest.
         Application application = jobOffer.getApplication();
         if (application != null) {
-            int frequency = request.relaunchFrequency() < 1 ? 1 : request.relaunchFrequency();
-            application.setDateRelaunch(application.getInitialApplicationDate().plusDays(frequency));
+            application.setDateRelaunch(application.getInitialApplicationDate().plusDays(request.relaunchFrequency()));
         }
 
         return JobOfferResponse.fromEntity(jobOffer);

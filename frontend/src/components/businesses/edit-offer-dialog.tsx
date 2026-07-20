@@ -24,6 +24,8 @@ interface EditOfferDialogProps {
 export function EditOfferDialog({ offer }: EditOfferDialogProps) {
   const { updateJobOffer } = useGDP()
   const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [name, setName] = useState(offer.name)
   const [link, setLink] = useState(offer.link ?? "")
@@ -33,6 +35,7 @@ export function EditOfferDialog({ offer }: EditOfferDialogProps) {
     setName(offer.name)
     setLink(offer.link ?? "")
     setRelaunchFrequency(offer.relaunchFrequency ?? 7)
+    setError(null)
   }
 
   const handleOpenChange = (val: boolean) => {
@@ -43,12 +46,20 @@ export function EditOfferDialog({ offer }: EditOfferDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    await updateJobOffer(offer.id, {
-      name: name.trim(),
-      link: link.trim(),
-      relaunchFrequency,
-    })
-    setOpen(false)
+    setError(null)
+    setIsSubmitting(true)
+    try {
+      await updateJobOffer(offer.id, {
+        name: name.trim(),
+        link: link.trim(),
+        relaunchFrequency,
+      })
+      setOpen(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la modification de l'offre")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -94,11 +105,16 @@ export function EditOfferDialog({ offer }: EditOfferDialogProps) {
               required
             />
           </div>
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" size="sm" />}>
+            <DialogClose render={<Button variant="outline" size="sm" disabled={isSubmitting} />}>
               Annuler
             </DialogClose>
-            <Button type="submit">Enregistrer</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

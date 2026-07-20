@@ -23,6 +23,8 @@ interface AddApplicationDialogProps {
 export function AddApplicationDialog({ jobOfferId, jobOfferName }: AddApplicationDialogProps) {
   const { addApplication } = useGDP()
   const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [dateRelaunch, setDateRelaunch] = useState("")
   const [initialApplicationDate, setInitialApplicationDate] = useState("")
@@ -30,6 +32,7 @@ export function AddApplicationDialog({ jobOfferId, jobOfferName }: AddApplicatio
   const resetAll = () => {
     setDateRelaunch("")
     setInitialApplicationDate("")
+    setError(null)
   }
 
   const handleOpenChange = (val: boolean) => {
@@ -42,13 +45,20 @@ export function AddApplicationDialog({ jobOfferId, jobOfferName }: AddApplicatio
     const applicationDate = initialApplicationDate + "T00:00:00"
     const relaunchDate = dateRelaunch + "T00:00:00"
 
-    await addApplication(jobOfferId, {
-      initialApplicationDate: applicationDate,
-      dateRelaunch: relaunchDate,
-    })
-
-    setOpen(false)
-    resetAll()
+    setError(null)
+    setIsSubmitting(true)
+    try {
+      await addApplication(jobOfferId, {
+        initialApplicationDate: applicationDate,
+        dateRelaunch: relaunchDate,
+      })
+      setOpen(false)
+      resetAll()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la création de la candidature")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -85,11 +95,16 @@ export function AddApplicationDialog({ jobOfferId, jobOfferName }: AddApplicatio
               onChange={(e) => setInitialApplicationDate(e.target.value)}
             />
           </div>
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
           <DialogFooter>
-            <DialogClose render={<Button variant="ghost" size="sm" />}>
+            <DialogClose render={<Button variant="ghost" size="sm" disabled={isSubmitting} />}>
               Annuler
             </DialogClose>
-            <Button type="submit">Créer la candidature</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Création..." : "Créer la candidature"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

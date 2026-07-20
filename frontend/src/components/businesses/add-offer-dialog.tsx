@@ -27,6 +27,8 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
   const { addJobOffer, addApplication } = useGDP()
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState<Step>("offer")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Offre fields
   const [name, setName] = useState("")
@@ -50,6 +52,7 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
     setDateRelaunch("")
     setInitialApplicationDate("")
     setCreatedJobOfferId(null)
+    setError(null)
   }
 
   const handleOpenChange = (val: boolean) => {
@@ -61,29 +64,48 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
   const handleOfferSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    const created = await addJobOffer(businessId, {name : name.trim(), 
-                                                   link: link.trim(), 
-                                                   relaunchFrequency: relaunchFrequency})
-    // addJobOffer doit retourner le JobOfferResponse pour récupérer l'id
-    if (created?.id) {
-      setCreatedJobOfferId(created.id)
+    setError(null)
+    setIsSubmitting(true)
+    try {
+      const created = await addJobOffer(businessId, {name : name.trim(),
+                                                     link: link.trim(),
+                                                     relaunchFrequency: relaunchFrequency})
+      // addJobOffer doit retourner le JobOfferResponse pour récupérer l'id
+      if (created?.id) {
+        setCreatedJobOfferId(created.id)
+      }
+      setStep("application")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la création de l'offre")
+    } finally {
+      setIsSubmitting(false)
     }
-    setStep("application")
   }
 
   // Étape 2a : ajouter une candidature et fermer
   const handleApplicationSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (createdJobOfferId) {
-      const applicationDate = initialApplicationDate + 'T00:00:00';
-      const relaunchDate = dateRelaunch + 'T00:00:00';
+    if (!createdJobOfferId) {
+      setOpen(false)
+      resetAll()
+      return
+    }
+    const applicationDate = initialApplicationDate + 'T00:00:00';
+    const relaunchDate = dateRelaunch + 'T00:00:00';
+    setError(null)
+    setIsSubmitting(true)
+    try {
       await addApplication(createdJobOfferId, {
         initialApplicationDate: applicationDate,
         dateRelaunch: relaunchDate,
       })
+      setOpen(false)
+      resetAll()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de la création de la candidature")
+    } finally {
+      setIsSubmitting(false)
     }
-    setOpen(false)
-    resetAll()
   }
 
   // Étape 2b : passer sans candidature
@@ -138,12 +160,15 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
                   required
                 />
               </div>
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
               <DialogFooter>
-                <DialogClose render={<Button variant="outline" size="sm" className="gap-1.5" />}>
+                <DialogClose render={<Button variant="outline" size="sm" className="gap-1.5" disabled={isSubmitting} />}>
                   Annuler
                 </DialogClose>
-                <Button type="submit" className="gap-1.5">
-                  Suivant
+                <Button type="submit" className="gap-1.5" disabled={isSubmitting}>
+                  {isSubmitting ? "Création..." : "Suivant"}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </DialogFooter>
@@ -184,6 +209,9 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
                   onChange={(e) => setInitialApplicationDate(e.target.value)}
                 />
               </div>
+              {error && (
+                <p className="text-sm text-destructive">{error}</p>
+              )}
               <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
                 <Button
                   type="button"
@@ -191,15 +219,16 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
                   size="sm"
                   onClick={() => setStep("offer")}
                   className="gap-1.5"
+                  disabled={isSubmitting}
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   Retour
                 </Button>
-                <Button type="button" variant="outline" onClick={handleSkip}>
+                <Button type="button" variant="outline" onClick={handleSkip} disabled={isSubmitting}>
                   Passer
                 </Button>
-                <Button type="submit">
-                  Créer la candidature
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Création..." : "Créer la candidature"}
                 </Button>
               </DialogFooter>
             </form>

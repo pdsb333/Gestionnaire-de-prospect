@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record JobOfferRequest( 
+public record JobOfferRequest(
     @NotBlank String name,
-    @URL String link,
+    @NotBlank @URL String link,
     @Min(1) @NotNull Integer relaunchFrequency
 ){}

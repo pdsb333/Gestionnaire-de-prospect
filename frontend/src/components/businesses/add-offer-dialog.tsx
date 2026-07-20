@@ -24,7 +24,7 @@ interface AddOfferDialogProps {
 type Step = "offer" | "application"
 
 export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
-  const { addJobOffer, addApplication } = useGDP()
+  const { addJobOffer, updateJobOffer, addApplication } = useGDP()
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState<Step>("offer")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -59,19 +59,28 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
     if (!val) resetAll()
   }
 
-  // Étape 1 : créer l'offre et passer à l'étape 2
+  // Étape 1 : créer l'offre (ou la mettre à jour si l'utilisateur revient en arrière depuis
+  // l'étape 2 et resoumet) puis passer à l'étape 2
   const handleOfferSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
     setError(null)
     setIsSubmitting(true)
     try {
-      const created = await addJobOffer(businessId, {name : name.trim(),
-                                                     link: link.trim(),
-                                                     relaunchFrequency: relaunchFrequency})
-      // addJobOffer doit retourner le JobOfferResponse pour récupérer l'id
-      if (created?.id) {
-        setCreatedJobOfferId(created.id)
+      if (createdJobOfferId) {
+        await updateJobOffer(createdJobOfferId, {
+          name: name.trim(),
+          link: link.trim(),
+          relaunchFrequency: relaunchFrequency,
+        })
+      } else {
+        const created = await addJobOffer(businessId, {name : name.trim(),
+                                                       link: link.trim(),
+                                                       relaunchFrequency: relaunchFrequency})
+        // addJobOffer doit retourner le JobOfferResponse pour récupérer l'id
+        if (created?.id) {
+          setCreatedJobOfferId(created.id)
+        }
       }
       setStep("application")
     } catch (err) {

@@ -5,6 +5,7 @@ import com.GDP.GDP.dto.application.ApplicationRequest;
 import com.GDP.GDP.dto.application.ApplicationResponse;
 import com.GDP.GDP.entity.*;
 import com.GDP.GDP.exception.ResourceNotFoundException;
+import com.GDP.GDP.exception.business.FutureDateException;
 import com.GDP.GDP.repository.ApplicationRepository;
 import com.GDP.GDP.repository.JobOfferRepository;
 
@@ -17,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
@@ -173,6 +175,34 @@ class ApplicationServiceImplTest {
 
             verify(applicationRepository, never()).save(any());
         }
+
+        @Test
+        @DisplayName("should succeed when initialApplicationDate is today, regardless of the current hour")
+        void shouldSucceedWhenInitialDateIsToday() {
+            LocalDateTime todayAtMidnight = LocalDate.now().atStartOfDay();
+            ApplicationRequest request = new ApplicationRequest(todayAtMidnight);
+            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
+            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+            when(applicationRepository.save(any(Application.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            ApplicationResponse response = applicationService.create(request, 1L, user);
+
+            assertThat(response.initialApplicationDate()).isEqualTo(todayAtMidnight);
+        }
+
+        @Test
+        @DisplayName("should throw FutureDateException when initialApplicationDate is in the future")
+        void shouldThrowWhenInitialDateIsInTheFuture() {
+            LocalDateTime tomorrow = LocalDate.now().plusDays(1).atStartOfDay();
+            ApplicationRequest request = new ApplicationRequest(tomorrow);
+            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
+            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+
+            assertThatThrownBy(() -> applicationService.create(request, 1L, user))
+                .isInstanceOf(FutureDateException.class);
+
+            verify(applicationRepository, never()).save(any());
+        }
     }
 
     /* ---------------------------------------------------------
@@ -265,6 +295,31 @@ class ApplicationServiceImplTest {
                     assertThat(e.getResource()).isEqualTo("Application");
                     assertThat(e.getIdentifier()).isEqualTo(99L);
                 });
+        }
+
+        @Test
+        @DisplayName("should succeed when initialApplicationDate is today, regardless of the current hour")
+        void shouldSucceedWhenInitialDateIsToday() {
+            LocalDateTime todayAtMidnight = LocalDate.now().atStartOfDay();
+            ApplicationRequest request = new ApplicationRequest(todayAtMidnight);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse response = applicationService.update(request, 1L, user);
+
+            assertThat(response.initialApplicationDate()).isEqualTo(todayAtMidnight);
+        }
+
+        @Test
+        @DisplayName("should throw FutureDateException when initialApplicationDate is in the future")
+        void shouldThrowWhenInitialDateIsInTheFuture() {
+            LocalDateTime tomorrow = LocalDate.now().plusDays(1).atStartOfDay();
+            ApplicationRequest request = new ApplicationRequest(tomorrow);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            assertThatThrownBy(() -> applicationService.update(request, 1L, user))
+                .isInstanceOf(FutureDateException.class);
         }
     }
     /* ---------------------------------------------------------

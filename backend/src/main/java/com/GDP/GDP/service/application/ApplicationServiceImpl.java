@@ -1,5 +1,6 @@
 package com.GDP.GDP.service.application;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -13,6 +14,7 @@ import com.GDP.GDP.entity.Application;
 import com.GDP.GDP.entity.JobOffer;
 import com.GDP.GDP.entity.User;
 import com.GDP.GDP.exception.ResourceNotFoundException;
+import com.GDP.GDP.exception.business.FutureDateException;
 import com.GDP.GDP.repository.ApplicationRepository;
 import com.GDP.GDP.repository.JobOfferRepository;
 
@@ -33,6 +35,12 @@ public class ApplicationServiceImpl implements ApplicationService{
         return date.plusDays(frequency < 1 ? 1 : frequency);
     }
 
+    private void validateNotFuture(LocalDateTime date) {
+        if (date.toLocalDate().isAfter(LocalDate.now())) {
+            throw new FutureDateException();
+        }
+    }
+
     private Application verifyApplication(Long id, User user){
         return applicationRepository.findByIdAndOffer_Business_UserId(id, user.getId())
                                 .orElseThrow(()-> new ResourceNotFoundException("Application", id));
@@ -47,6 +55,7 @@ public class ApplicationServiceImpl implements ApplicationService{
         // Truncate to microseconds (Postgres timestamp(6)) so the in-memory value used for
         // historyOfRelaunches Set membership matches exactly what gets persisted and reloaded.
         LocalDateTime initialDate = request.initialApplicationDate().truncatedTo(ChronoUnit.MICROS);
+        validateNotFuture(initialDate);
         LocalDateTime dateRelaunch = computeRelaunch(initialDate, jobOffer.getRelaunchFrequency());
 
         Application application = new Application(initialDate, dateRelaunch, jobOffer);
@@ -59,6 +68,7 @@ public class ApplicationServiceImpl implements ApplicationService{
     public ApplicationResponse update(ApplicationRequest request, Long id, User user){
         Application application = verifyApplication(id, user);
         LocalDateTime newInitialDate = request.initialApplicationDate().truncatedTo(ChronoUnit.MICROS);
+        validateNotFuture(newInitialDate);
 
         if(!application.getInitialApplicationDate().equals(newInitialDate)){
             application.getHistoryOfRelaunches().remove(application.getInitialApplicationDate());

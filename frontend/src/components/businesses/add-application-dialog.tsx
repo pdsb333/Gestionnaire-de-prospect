@@ -26,11 +26,12 @@ export function AddApplicationDialog({ jobOfferId, jobOfferName }: AddApplicatio
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [dateRelaunch, setDateRelaunch] = useState("")
   const [initialApplicationDate, setInitialApplicationDate] = useState("")
 
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+
   const resetAll = () => {
-    setDateRelaunch("")
     setInitialApplicationDate("")
     setError(null)
   }
@@ -43,14 +44,12 @@ export function AddApplicationDialog({ jobOfferId, jobOfferName }: AddApplicatio
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const applicationDate = initialApplicationDate + "T00:00:00"
-    const relaunchDate = dateRelaunch + "T00:00:00"
 
     setError(null)
     setIsSubmitting(true)
     try {
       await addApplication(jobOfferId, {
         initialApplicationDate: applicationDate,
-        dateRelaunch: relaunchDate,
       })
       setOpen(false)
       resetAll()
@@ -78,21 +77,14 @@ export function AddApplicationDialog({ jobOfferId, jobOfferName }: AddApplicatio
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="add-app-relaunch">Date de relance prévue</Label>
-            <Input
-              id="add-app-relaunch"
-              type="date"
-              value={dateRelaunch}
-              onChange={(e) => setDateRelaunch(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="add-app-initial">Date de candidature initiale</Label>
+            <Label htmlFor="add-app-initial">Date de candidature initiale *</Label>
             <Input
               id="add-app-initial"
               type="date"
               value={initialApplicationDate}
               onChange={(e) => setInitialApplicationDate(e.target.value)}
+              max={today}
+              required
             />
           </div>
           {error && (

@@ -102,7 +102,7 @@ class ApiClient {
   // ============ APPLICATIONS ============
   async createApplication(
     jobOfferId: number,
-    data: Omit<Application, "id" | "historyOfRelaunches">
+    data: Omit<Application, "id" | "historyOfRelaunches" | "dateRelaunch">
   ): Promise<Application> {
     return this.request<Application>(`/api/application/post/${jobOfferId}`, {
       method: "POST",

@@ -36,20 +36,19 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
   const [relaunchFrequency, setRelaunchFrequency] = useState<number>(7)
 
   // Application fields
-  const [dateRelaunch, setDateRelaunch] = useState("")
   const [initialApplicationDate, setInitialApplicationDate] = useState("")
 
   // Id de l'offre créée, utilisé pour lier la candidature
   const [createdJobOfferId, setCreatedJobOfferId] = useState<number | null>(null)
 
-  const today = new Date().toISOString().split("T")[0]
+  const now = new Date()
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
 
   const resetAll = () => {
     setStep("offer")
     setName("")
     setLink("")
     setRelaunchFrequency(7)
-    setDateRelaunch("")
     setInitialApplicationDate("")
     setCreatedJobOfferId(null)
     setError(null)
@@ -91,13 +90,11 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
       return
     }
     const applicationDate = initialApplicationDate + 'T00:00:00';
-    const relaunchDate = dateRelaunch + 'T00:00:00';
     setError(null)
     setIsSubmitting(true)
     try {
       await addApplication(createdJobOfferId, {
         initialApplicationDate: applicationDate,
-        dateRelaunch: relaunchDate,
       })
       setOpen(false)
       resetAll()
@@ -192,21 +189,14 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
 
             <form onSubmit={handleApplicationSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="app-relaunch">Date de relance prevue</Label>
-                <Input
-                  id="app-relaunch"
-                  type="date"
-                  value={dateRelaunch}
-                  onChange={(e) => setDateRelaunch(e.target.value)}
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="app-initial">Date de candidature initiale</Label>
+                <Label htmlFor="app-initial">Date de candidature initiale *</Label>
                 <Input
                   id="app-initial"
                   type="date"
                   value={initialApplicationDate}
                   onChange={(e) => setInitialApplicationDate(e.target.value)}
+                  max={today}
+                  required
                 />
               </div>
               {error && (

@@ -193,7 +193,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   const addApplication = useCallback(
     async (
       jobOfferId: number,
-      app: Omit<Application, "id" | "historyOfRelaunches">
+      app: Omit<Application, "id" | "historyOfRelaunches" | "dateRelaunch">
     ) => {
       try {
         await apiClient.createApplication(jobOfferId, app)

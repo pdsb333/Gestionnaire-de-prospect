@@ -34,7 +34,7 @@ export async function GET() {
       }
 
       return NextResponse.json(
-        { message: errorData.message || "Accès refusé", details: errorData },
+        { message: errorData.message || "Erreur backend", details: errorData },
         { status: res.status }
       );
     }

@@ -29,12 +29,14 @@ export function EditOfferDialog({ offer }: EditOfferDialogProps) {
 
   const [name, setName] = useState(offer.name)
   const [link, setLink] = useState(offer.link ?? "")
-  const [relaunchFrequency, setRelaunchFrequency] = useState<number>(offer.relaunchFrequency ?? 7)
+  // Kept as a string so clearing the field doesn't snap back to "0" (Number("") === 0) while
+  // the user is retyping a value — converted to a number only at submit time.
+  const [relaunchFrequency, setRelaunchFrequency] = useState(String(offer.relaunchFrequency ?? 7))
 
   const resetAll = () => {
     setName(offer.name)
     setLink(offer.link ?? "")
-    setRelaunchFrequency(offer.relaunchFrequency ?? 7)
+    setRelaunchFrequency(String(offer.relaunchFrequency ?? 7))
     setError(null)
   }
 
@@ -52,7 +54,7 @@ export function EditOfferDialog({ offer }: EditOfferDialogProps) {
       await updateJobOffer(offer.id, {
         name: name.trim(),
         link: link.trim(),
-        relaunchFrequency,
+        relaunchFrequency: Number(relaunchFrequency),
       })
       setOpen(false)
     } catch (err) {
@@ -100,7 +102,7 @@ export function EditOfferDialog({ offer }: EditOfferDialogProps) {
               type="number"
               min={1}
               value={relaunchFrequency}
-              onChange={(e) => setRelaunchFrequency(Number(e.target.value))}
+              onChange={(e) => setRelaunchFrequency(e.target.value)}
               placeholder="Ex: 7"
               required
             />

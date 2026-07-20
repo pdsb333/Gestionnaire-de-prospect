@@ -33,7 +33,9 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
   // Offre fields
   const [name, setName] = useState("")
   const [link, setLink] = useState("")
-  const [relaunchFrequency, setRelaunchFrequency] = useState<number>(7)
+  // Kept as a string so clearing the field doesn't snap back to "0" (Number("") === 0) while
+  // the user is retyping a value — converted to a number only at submit time.
+  const [relaunchFrequency, setRelaunchFrequency] = useState("7")
 
   // Application fields
   const [initialApplicationDate, setInitialApplicationDate] = useState("")
@@ -48,7 +50,7 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
     setStep("offer")
     setName("")
     setLink("")
-    setRelaunchFrequency(7)
+    setRelaunchFrequency("7")
     setInitialApplicationDate("")
     setCreatedJobOfferId(null)
     setError(null)
@@ -71,12 +73,12 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
         await updateJobOffer(createdJobOfferId, {
           name: name.trim(),
           link: link.trim(),
-          relaunchFrequency: relaunchFrequency,
+          relaunchFrequency: Number(relaunchFrequency),
         })
       } else {
         const created = await addJobOffer(businessId, {name : name.trim(),
                                                        link: link.trim(),
-                                                       relaunchFrequency: relaunchFrequency})
+                                                       relaunchFrequency: Number(relaunchFrequency)})
         // addJobOffer doit retourner le JobOfferResponse pour récupérer l'id
         if (created?.id) {
           setCreatedJobOfferId(created.id)
@@ -161,7 +163,7 @@ export function AddOfferDialog({ businessId }: AddOfferDialogProps) {
                   type="number"
                   min={1}
                   value={relaunchFrequency}
-                  onChange={(e) => setRelaunchFrequency(Number(e.target.value))}
+                  onChange={(e) => setRelaunchFrequency(e.target.value)}
                   placeholder="Ex: 7"
                   required
                 />

@@ -35,4 +35,16 @@ public interface BusinessRepository extends JpaRepository<Business, Long>{
         WHERE b.user.id = :userId
         """)
     List<Business> findByUserIdWithProfessionals(@Param("userId") UUID userId);
+
+    // Same trick as findByUserIdWithProfessionals: runs in the same persistence context as
+    // findByUserIdWithJobOffers, so this just enriches the already-loaded Application instances'
+    // historyOfRelaunches instead of leaving it to lazy-load once per application.
+    @Query("""
+        SELECT DISTINCT b FROM Business b
+        LEFT JOIN FETCH b.jobOffersList jo
+        LEFT JOIN FETCH jo.application a
+        LEFT JOIN FETCH a.historyOfRelaunches
+        WHERE b.user.id = :userId
+        """)
+    List<Business> findByUserIdWithApplicationHistory(@Param("userId") UUID userId);
 }

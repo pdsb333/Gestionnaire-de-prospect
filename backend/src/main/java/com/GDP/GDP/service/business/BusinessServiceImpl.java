@@ -45,6 +45,9 @@ public class BusinessServiceImpl implements BusinessService {
         // Same persistence context as above: this populates professionalsList on the
         // already-loaded Business instances without an extra query per business.
         businessRepository.findByUserIdWithProfessionals(user.getId());
+        // Same persistence context again: populates each Application's historyOfRelaunches
+        // without an extra query per application (was previously lazy-loaded one at a time).
+        businessRepository.findByUserIdWithApplicationHistory(user.getId());
 
         return businesses
                     .stream()

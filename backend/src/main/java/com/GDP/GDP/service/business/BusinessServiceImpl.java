@@ -92,8 +92,11 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     public void deleteBusiness(User user, Long id){
-        Business business = businessRepository.findByIdAndUserId(id, user.getId())
+        Business business = businessRepository.findByIdAndUserIdWithJobOffers(id, user.getId())
                     .orElseThrow(()-> new ResourceNotFoundException("Business", id));
+        // Same persistence context as above: populates professionalsList on the already-loaded
+        // Business instance so the cascade delete below doesn't lazy-load it separately.
+        businessRepository.findByIdAndUserIdWithProfessionals(id, user.getId());
 
         businessRepository.delete(business);
     }

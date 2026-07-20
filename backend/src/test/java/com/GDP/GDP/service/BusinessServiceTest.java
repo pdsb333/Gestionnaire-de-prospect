@@ -364,13 +364,14 @@ class BusinessServiceTest {
         void shouldDeleteExistingBusinessOwnedByUser() {
             // Arrange
             Business business = createBusiness("Entreprise A", "Description", "Contact", currentUser);
-            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.of(business));
+            when(businessRepository.findByIdAndUserIdWithJobOffers(1L, userId)).thenReturn(Optional.of(business));
 
             // Act
             businessService.deleteBusiness(currentUser, 1L);
 
             // Assert
-            verify(businessRepository).findByIdAndUserId(1L, userId);
+            verify(businessRepository).findByIdAndUserIdWithJobOffers(1L, userId);
+            verify(businessRepository).findByIdAndUserIdWithProfessionals(1L, userId);
             verify(businessRepository).delete(business);
         }
 
@@ -378,7 +379,7 @@ class BusinessServiceTest {
         @DisplayName("Should throw ResourceNotFoundException when business not found")
         void shouldThrowExceptionWhenBusinessNotFound() {
             // Arrange
-            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.empty());
+            when(businessRepository.findByIdAndUserIdWithJobOffers(1L, userId)).thenReturn(Optional.empty());
 
             // Act & Assert
             assertThatThrownBy(() -> businessService.deleteBusiness(currentUser, 1L))
@@ -390,7 +391,7 @@ class BusinessServiceTest {
         @DisplayName("Should throw ResourceNotFoundException when business owned by another user")
         void shouldThrowExceptionWhenBusinessOwnedByAnotherUser() {
             // Arrange
-            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.empty());
+            when(businessRepository.findByIdAndUserIdWithJobOffers(1L, userId)).thenReturn(Optional.empty());
 
             // Act & Assert
             assertThatThrownBy(() -> businessService.deleteBusiness(currentUser, 1L))
@@ -401,7 +402,7 @@ class BusinessServiceTest {
         @DisplayName("Should throw ResourceNotFoundException for non-existing business id")
         void shouldThrowExceptionForNonExistingBusinessId() {
             // Arrange
-            when(businessRepository.findByIdAndUserId(999L, userId)).thenReturn(Optional.empty());
+            when(businessRepository.findByIdAndUserIdWithJobOffers(999L, userId)).thenReturn(Optional.empty());
 
             // Act & Assert
             assertThatThrownBy(() -> businessService.deleteBusiness(currentUser, 999L))

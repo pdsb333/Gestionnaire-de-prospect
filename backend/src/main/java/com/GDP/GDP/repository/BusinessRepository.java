@@ -47,4 +47,22 @@ public interface BusinessRepository extends JpaRepository<Business, Long>{
         WHERE b.user.id = :userId
         """)
     List<Business> findByUserIdWithApplicationHistory(@Param("userId") UUID userId);
+
+    // Same fetch-join trick as above, scoped to a single business: used before a cascade delete
+    // so Hibernate doesn't lazy-load jobOffersList/professionalsList (and each JobOffer's
+    // Application) one query at a time while cascading.
+    @Query("""
+        SELECT b FROM Business b
+        LEFT JOIN FETCH b.jobOffersList jo
+        LEFT JOIN FETCH jo.application
+        WHERE b.id = :id AND b.user.id = :userId
+        """)
+    Optional<Business> findByIdAndUserIdWithJobOffers(@Param("id") Long id, @Param("userId") UUID userId);
+
+    @Query("""
+        SELECT b FROM Business b
+        LEFT JOIN FETCH b.professionalsList
+        WHERE b.id = :id AND b.user.id = :userId
+        """)
+    Optional<Business> findByIdAndUserIdWithProfessionals(@Param("id") Long id, @Param("userId") UUID userId);
 }

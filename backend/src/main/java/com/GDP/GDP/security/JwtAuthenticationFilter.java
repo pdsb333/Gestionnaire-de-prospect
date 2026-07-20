@@ -38,25 +38,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (jwt != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            String username;
-
             try {
-                username = jwtService.extractUsername(jwt);
+                String username = jwtService.extractUsername(jwt);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             } catch (Exception e) {
-                // Token expiré / signature invalide / corrompu
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                // Token expiré / signature invalide / corrompu / utilisateur supprimé depuis :
+                // on laisse la requête continuer non authentifiée plutôt que de laisser
+                // l'exception remonter hors du filtre (elle contournerait GlobalExceptionHandler
+                // et renverrait un 500 brut au lieu d'un 401).
             }
         }
 

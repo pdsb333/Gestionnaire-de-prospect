@@ -14,11 +14,18 @@ export async function POST(req: Request) {
       credentials: "include",
     });
 
-    const responseText = await res.text();
-
     if (!res.ok) {
+      const text = await res.text();
+      let error;
+
+      try {
+        error = JSON.parse(text);
+      } catch {
+        error = { message: text };
+      }
+
       return NextResponse.json(
-        { message: "Identifiants invalides", details: responseText },
+        { message: error.message || "Erreur backend", details: error },
         { status: res.status }
       );
     }

@@ -46,7 +46,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ joboffe
       );
     }
 
-    return NextResponse.json(await res.json());
+    return NextResponse.json(await res.json(), { status: res.status });
   } catch (err) {
     return apiRouteError(err);
   }

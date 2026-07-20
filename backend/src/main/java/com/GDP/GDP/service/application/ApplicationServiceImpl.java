@@ -14,6 +14,7 @@ import com.GDP.GDP.entity.Application;
 import com.GDP.GDP.entity.JobOffer;
 import com.GDP.GDP.entity.User;
 import com.GDP.GDP.exception.ResourceNotFoundException;
+import com.GDP.GDP.exception.business.ApplicationAlreadyExistsException;
 import com.GDP.GDP.exception.business.FutureDateException;
 import com.GDP.GDP.repository.ApplicationRepository;
 import com.GDP.GDP.repository.JobOfferRepository;
@@ -51,6 +52,10 @@ public class ApplicationServiceImpl implements ApplicationService{
         JobOffer jobOffer = jobOfferRepository.findById(jobOfferId)
                                 .orElseThrow(()-> new ResourceNotFoundException("JobOffer", jobOfferId));
         verifyBusinessForUser.verifyBusiness(jobOffer.getBusiness().getId(), user);
+
+        if (jobOffer.getApplication() != null) {
+            throw new ApplicationAlreadyExistsException(jobOfferId);
+        }
 
         // Truncate to microseconds (Postgres timestamp(6)) so the in-memory value used for
         // historyOfRelaunches Set membership matches exactly what gets persisted and reloaded.

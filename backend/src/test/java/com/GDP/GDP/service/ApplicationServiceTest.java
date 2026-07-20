@@ -5,6 +5,7 @@ import com.GDP.GDP.dto.application.ApplicationRequest;
 import com.GDP.GDP.dto.application.ApplicationResponse;
 import com.GDP.GDP.entity.*;
 import com.GDP.GDP.exception.ResourceNotFoundException;
+import com.GDP.GDP.exception.business.ApplicationAlreadyExistsException;
 import com.GDP.GDP.exception.business.FutureDateException;
 import com.GDP.GDP.repository.ApplicationRepository;
 import com.GDP.GDP.repository.JobOfferRepository;
@@ -200,6 +201,20 @@ class ApplicationServiceImplTest {
 
             assertThatThrownBy(() -> applicationService.create(request, 1L, user))
                 .isInstanceOf(FutureDateException.class);
+
+            verify(applicationRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("should throw ApplicationAlreadyExistsException when jobOffer already has an application")
+        void shouldThrowWhenJobOfferAlreadyHasApplication() {
+            jobOffer.setApplication(application);
+            ApplicationRequest request = new ApplicationRequest(initialDate);
+            when(jobOfferRepository.findById(1L)).thenReturn(Optional.of(jobOffer));
+            when(verifyBusinessForUser.verifyBusiness(1L, user)).thenReturn(business);
+
+            assertThatThrownBy(() -> applicationService.create(request, 1L, user))
+                .isInstanceOf(ApplicationAlreadyExistsException.class);
 
             verify(applicationRepository, never()).save(any());
         }

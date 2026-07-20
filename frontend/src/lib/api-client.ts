@@ -32,16 +32,16 @@ class ApiClient {
   }
 
   // ============ AUTH ============
-  async register(data: Auth): Promise<{token:string}>{
-    const response = await this.request<{token: string}>("/api/auth/register", {
+  async register(data: Auth): Promise<{message: string}>{
+    const response = await this.request<{message: string}>("/api/auth/register", {
         method: "POST",
         body: JSON.stringify(data),
     })
     return response
   }
 
-  async login(credentials: Omit<Auth, "pseudo">): Promise<{ token: string }> {
-    const response = await this.request<{ token: string }>("/api/auth/login", {
+  async login(credentials: Omit<Auth, "pseudo">): Promise<{ message: string }> {
+    const response = await this.request<{ message: string }>("/api/auth/login", {
       method: "POST",
       body: JSON.stringify(credentials),
     })

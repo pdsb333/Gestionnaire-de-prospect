@@ -59,13 +59,14 @@ export function AppSidebar() {
                     : pathname.startsWith(item.href)
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton isActive={isActive}>
-                      <Link href={item.href} className="flex items-center justify-between">
-                        <span className="flex items-center gap-2">
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                        </span>
-                      </Link>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      render={<Link href={item.href} className="flex items-center justify-between" />}
+                    >
+                      <span className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )

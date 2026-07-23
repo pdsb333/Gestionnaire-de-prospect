@@ -3,6 +3,7 @@ package com.GDP.GDP.service.business;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,9 +69,16 @@ public class BusinessServiceImpl implements BusinessService {
             user
         );
 
-        return BusinessResponse.fromEntity(
-            businessRepository.save(business)
-        );
+        try {
+            return BusinessResponse.fromEntity(
+                businessRepository.save(business)
+            );
+        } catch (DataIntegrityViolationException e) {
+            // Same non-atomic check-then-act race as ApplicationServiceImpl.create(): the
+            // (user_id, name) unique constraint is the real guard, this just keeps the loser's
+            // error consistent with the non-racy case instead of a generic 409.
+            throw new BusinessAlreadyExistsException(normalized);
+        }
     }
 
     @Override
@@ -84,10 +92,14 @@ public class BusinessServiceImpl implements BusinessService {
             assertBusinessNameNotExists(user, normalized);
             business.setName(normalized);
         }
-        business.setDescription(request.description()); 
+        business.setDescription(request.description());
         business.setRecruitmentServiceContact(request.recruitmentServiceContact());
-        return BusinessResponse.fromEntity(businessRepository.save(business));
-        
+
+        try {
+            return BusinessResponse.fromEntity(businessRepository.save(business));
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessAlreadyExistsException(normalized);
+        }
     }
 
     @Override

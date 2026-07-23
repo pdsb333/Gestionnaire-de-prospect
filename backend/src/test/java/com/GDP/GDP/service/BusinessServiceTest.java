@@ -28,6 +28,7 @@ import com.GDP.GDP.exception.ResourceNotFoundException;
 import com.GDP.GDP.exception.business.BusinessAlreadyExistsException;
 import com.GDP.GDP.repository.BusinessRepository;
 import com.GDP.GDP.service.business.BusinessServiceImpl;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 class BusinessServiceTest {
@@ -234,6 +235,21 @@ class BusinessServiceTest {
             assertThat(result.name()).isEqualTo("Entreprise A");
             assertThat(result.description()).isNull();
         }
+
+        @Test
+        @DisplayName("Should translate a DataIntegrityViolationException from save() into BusinessAlreadyExistsException")
+        void shouldTranslateDataIntegrityViolation_intoBusinessAlreadyExistsException() {
+            // Simulates the race window between assertBusinessNameNotExists and the insert: two
+            // concurrent creates with the same name both pass the check, and the DB's unique
+            // constraint on (user_id, name) is what actually catches the loser.
+            BusinessRequest request = createBusinessRequest("Entreprise A", "Desc", "Contact");
+            when(businessRepository.existsByNameAndUser_Id("Entreprise A", userId)).thenReturn(false);
+            when(businessRepository.save(any(Business.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate key"));
+
+            assertThatThrownBy(() -> businessService.create(currentUser, request))
+                .isInstanceOf(BusinessAlreadyExistsException.class);
+        }
     }
 
     /* ---------------------------------------------------------
@@ -291,6 +307,23 @@ class BusinessServiceTest {
             when(businessRepository.existsByNameAndUser_Id("Entreprise B", userId)).thenReturn(true);
 
             // Act & Assert
+            assertThatThrownBy(() -> businessService.updateBusiness(currentUser, 1L, request))
+                .isInstanceOf(BusinessAlreadyExistsException.class);
+        }
+
+        @Test
+        @DisplayName("Should translate a DataIntegrityViolationException from save() into BusinessAlreadyExistsException")
+        void shouldTranslateDataIntegrityViolation_intoBusinessAlreadyExistsException() {
+            // Same race as create(): the pre-check and the update aren't atomic, so the unique
+            // constraint on (user_id, name) is what actually catches a concurrent rename to the
+            // same name.
+            Business existing = createBusiness("Entreprise A", "Description", "Contact", currentUser);
+            BusinessRequest request = createBusinessRequest("Entreprise B", "Description", "Contact");
+            when(businessRepository.findByIdAndUserId(1L, userId)).thenReturn(Optional.of(existing));
+            when(businessRepository.existsByNameAndUser_Id("Entreprise B", userId)).thenReturn(false);
+            when(businessRepository.save(any(Business.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate key"));
+
             assertThatThrownBy(() -> businessService.updateBusiness(currentUser, 1L, request))
                 .isInstanceOf(BusinessAlreadyExistsException.class);
         }

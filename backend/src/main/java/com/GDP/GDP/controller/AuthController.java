@@ -19,7 +19,6 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private static final String TOKEN_COOKIE_NAME = "token";
-    private static final Duration COOKIE_DURATION = Duration.ofDays(1);
 
     private final AuthService authService;
 
@@ -28,6 +27,11 @@ public class AuthController {
 
     @Value("${app.auth.cookie.same-site:Lax}")
     private String sameSite;
+
+    // Kept equal to jwt.expiration (see JwtService) so the cookie never outlives the token it
+    // carries: a longer-lived cookie would keep resending an already-expired JWT for no benefit.
+    @Value("${jwt.expiration}")
+    private long jwtExpirationMs;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
@@ -44,7 +48,7 @@ public class AuthController {
 
         return ResponseEntity
                 .status(201)
-                .header(HttpHeaders.SET_COOKIE, buildTokenCookie(token, COOKIE_DURATION).toString())
+                .header(HttpHeaders.SET_COOKIE, buildTokenCookie(token, Duration.ofMillis(jwtExpirationMs)).toString())
                 .build();
     }
 
@@ -58,7 +62,7 @@ public class AuthController {
 
         return ResponseEntity
                 .noContent()
-                .header(HttpHeaders.SET_COOKIE, buildTokenCookie(token, COOKIE_DURATION).toString())
+                .header(HttpHeaders.SET_COOKIE, buildTokenCookie(token, Duration.ofMillis(jwtExpirationMs)).toString())
                 .build();
     }
 

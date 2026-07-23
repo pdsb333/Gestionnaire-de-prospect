@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useCallback, useEffect, type ReactNode } from "react"
+import { usePathname } from "next/navigation"
 import { GDPContext, type GDPStore } from "@/lib/store"
 import { apiClient } from "@/lib/api-client"
+import { isProtectedRoute } from "@/lib/routes"
 import { Application, Business, JobOffer, Professional, type Auth } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
@@ -34,6 +36,7 @@ function ApiNotConfigured() {
 }
 
 export function GDPProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isConfigured, setIsConfigured] = useState(() => apiClient.isConfigured())
@@ -58,7 +61,18 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    // GDPProvider wraps the whole app (public pages included), so without this guard the
+    // initial fetch would always fire — and always fail unauthenticated — on /connexion,
+    // /inscription, and the landing page. Deliberately checks pathname only at mount time
+    // (not a reactive dependency): GDPProvider isn't remounted per route, and login()/register()
+    // already trigger their own refetch once a session exists, so re-running this on every
+    // in-app navigation would just be redundant requests.
+    if (!isProtectedRoute(pathname)) {
+      setLoading(false)
+      return
+    }
     fetchBusinesses()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchBusinesses])
 
   const login = useCallback(

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { parseJwt } from "@/lib/parseJWT";
+import { isProtectedRoute } from "@/lib/routes";
 
-const protectedRoutes = [ "/dashboard", "/businesses", "/contacts", "/relaunches" ];
 const authRoutes = ["/connexion", "/inscription"];
 
 export default function proxy(req: NextRequest) {
@@ -10,7 +10,6 @@ export default function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
     const isAuthRoute = authRoutes.some(r => pathname.startsWith(r));
-    const isProtectedRoute = protectedRoutes.some(r => pathname.startsWith(r));
 
     if (token) {
         const decoded = parseJwt(token);
@@ -25,7 +24,7 @@ export default function proxy(req: NextRequest) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
-    if (isProtectedRoute && !token) {
+    if (isProtectedRoute(pathname) && !token) {
         return NextResponse.redirect(new URL("/connexion", req.url));
     }
 

@@ -48,7 +48,10 @@ export function BusinessFormDialog({
     setDescription(defaultValues.description ?? "")
     setContact(defaultValues.contact ?? "")
     setError(null)
-  }, [open])
+    // Depend on the primitive fields, not the defaultValues object reference (a fresh literal
+    // on every render) — otherwise this would either miss updates (deps: [open]) or re-run on
+    // every render (deps: [open, defaultValues]).
+  }, [open, defaultValues.name, defaultValues.description, defaultValues.contact])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

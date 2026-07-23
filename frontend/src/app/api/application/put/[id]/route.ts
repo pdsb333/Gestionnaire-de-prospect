@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { apiRouteError } from "@/lib/api-route-error";
+import { parseNumericId } from "@/lib/parse-numeric-id";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const payload = await req.json();
@@ -16,8 +17,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     );
   }
 
+  const applicationId = parseNumericId(id);
+  if (typeof applicationId !== "number") {
+    return applicationId;
+  }
+
   try {
-    const res = await fetch(`${process.env.API_URL}application/${id}`, {
+    const res = await fetch(`${process.env.API_URL}application/${applicationId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,

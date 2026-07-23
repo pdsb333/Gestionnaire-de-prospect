@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { apiRouteError } from "@/lib/api-route-error";
+import { parseNumericId } from "@/lib/parse-numeric-id";
 
 export async function DELETE(_req: Request,
     { params }: { params: Promise<{ id: string }> }) {
@@ -14,8 +15,14 @@ export async function DELETE(_req: Request,
             { status: 401 }
         );
     }
+
+    const jobOfferId = parseNumericId(id);
+    if (typeof jobOfferId !== "number") {
+        return jobOfferId;
+    }
+
     try {
-        const apiUrl = `${process.env.API_URL}job-offers/${id}`;
+        const apiUrl = `${process.env.API_URL}job-offers/${jobOfferId}`;
         const res = await fetch(apiUrl, {
             method: "DELETE",
             headers: {

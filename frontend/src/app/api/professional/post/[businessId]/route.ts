@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { apiRouteError } from "@/lib/api-route-error";
+import { parseNumericId } from "@/lib/parse-numeric-id";
 
 export async function POST(req: Request, { params }: { params: Promise<{ businessId: string }> }) {
   const payload = await req.json();
@@ -16,8 +17,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ busines
     );
   }
 
+  const id = parseNumericId(businessId);
+  if (typeof id !== "number") {
+    return id;
+  }
+
   try {
-    const res = await fetch(`${process.env.API_URL}professionals/${businessId}`, {
+    const res = await fetch(`${process.env.API_URL}professionals/${id}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

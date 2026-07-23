@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { apiRouteError } from "@/lib/api-route-error";
+import { parseNumericId } from "@/lib/parse-numeric-id";
 
 export async function POST(req: Request, { params }: { params: Promise<{ applicationId: string }> }) {
   const cookieStore = await cookies();
@@ -14,8 +15,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ applica
     );
   }
 
+  const id = parseNumericId(applicationId);
+  if (typeof id !== "number") {
+    return id;
+  }
+
   try {
-    const res = await fetch(`${process.env.API_URL}application/${applicationId}/relance`, {
+    const res = await fetch(`${process.env.API_URL}application/${id}/relance`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useGDP } from "@/lib/store"
-import { cn } from "@/lib/utils"
+import { cn, isSafeHttpUrl } from "@/lib/utils"
 import type { Application, JobOffer } from "@/lib/types"
 import { EditOfferDialog } from "./edit-offer-dialog"
 import { ConfirmDeleteDialog } from "./confirm-delete-dialog"
@@ -122,7 +122,7 @@ export function ApplicationRow({
                 {jobOffer.name || "Offre inconnue"}
               </p>
 
-              {jobOffer.link && (
+              {jobOffer.link && isSafeHttpUrl(jobOffer.link) && (
                 <a
                   href={jobOffer.link}
                   target="_blank"

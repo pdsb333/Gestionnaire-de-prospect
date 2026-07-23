@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardAction } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGDP } from "@/lib/store"
+import { isSafeHttpUrl } from "@/lib/utils"
 import { ApplicationRow } from "./application-row"
 import { useRouter } from "next/navigation"
 import { EditBusinessDialog } from "./edit-business-dialog"
@@ -213,7 +214,7 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
                   <CardContent className="flex items-center justify-between p-4">
                     <div className="flex flex-col gap-0.5">
                       <p className="text-sm font-medium">{offer.name ?? "Offre sans titre"}</p>
-                      {offer.link && (
+                      {offer.link && isSafeHttpUrl(offer.link) && (
                         <a
                           href={offer.link}
                           target="_blank"

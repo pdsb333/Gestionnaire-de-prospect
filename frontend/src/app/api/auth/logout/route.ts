@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { apiRouteError } from "@/lib/api-route-error";
+import { assertSameOrigin } from "@/lib/assert-same-origin";
 
-export async function POST() {
+export async function POST(req: Request) {
+    const originError = assertSameOrigin(req);
+    if (originError) {
+        return originError;
+    }
+
     try {
         const res = await fetch(`${process.env.API_URL}auth/logout`, {
             method: "POST",

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { apiRouteError } from "@/lib/api-route-error";
+import { assertSameOrigin } from "@/lib/assert-same-origin";
 
 export async function POST(req: Request) {
+  const originError = assertSameOrigin(req);
+  if (originError) {
+    return originError;
+  }
+
   const credentials = await req.json();
   const apiUrl = `${process.env.API_URL}auth/login`;
 

@@ -2,9 +2,15 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { apiRouteError } from "@/lib/api-route-error";
 import { parseNumericId } from "@/lib/parse-numeric-id";
+import { assertSameOrigin } from "@/lib/assert-same-origin";
 
-export async function DELETE(_req: Request,
+export async function DELETE(req: Request,
     { params }: { params: Promise<{ id: string }> }) {
+    const originError = assertSameOrigin(req);
+    if (originError) {
+        return originError;
+    }
+
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
     const { id } = await params;

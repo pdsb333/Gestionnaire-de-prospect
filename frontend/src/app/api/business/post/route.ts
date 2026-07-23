@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { apiRouteError } from "@/lib/api-route-error";
+import { assertSameOrigin } from "@/lib/assert-same-origin";
 
 export async function POST(req: Request) {
+  const originError = assertSameOrigin(req);
+  if (originError) {
+    return originError;
+  }
+
   const payload = await req.json();
 
   const cookieStore = await cookies();

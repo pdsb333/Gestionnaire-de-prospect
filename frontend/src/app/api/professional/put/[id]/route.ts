@@ -2,8 +2,14 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { apiRouteError } from "@/lib/api-route-error";
 import { parseNumericId } from "@/lib/parse-numeric-id";
+import { assertSameOrigin } from "@/lib/assert-same-origin";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const originError = assertSameOrigin(req);
+  if (originError) {
+    return originError;
+  }
+
   const payload = await req.json();
 
   const cookieStore = await cookies();

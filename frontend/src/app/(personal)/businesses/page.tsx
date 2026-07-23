@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { parseISO, isPast, isToday } from "date-fns"
 import { Building2, ChevronRight, FileText, Users, Briefcase } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -37,11 +38,14 @@ export default function BusinessesPage() {
       ) : (
         <div className="grid gap-3">
           {businesses.map((biz) => {
-            // Offres avec une candidature en retard de relance
+            // Offres avec une candidature en retard de relance (même logique que
+            // UpcomingRelaunches/ApplicationRow/BusinessDetail/DashboardPage : local-time
+            // isPast && !isToday, plutôt qu'une comparaison de string en UTC)
             const overdueCount = (biz.jobOffersList ?? []).filter((j) => {
               const app = j.application
               if (!app?.dateRelaunch) return false
-              return app.dateRelaunch < new Date().toISOString().split("T")[0]
+              const relaunchDate = parseISO(app.dateRelaunch)
+              return isPast(relaunchDate) && !isToday(relaunchDate)
             }).length
 
             return (

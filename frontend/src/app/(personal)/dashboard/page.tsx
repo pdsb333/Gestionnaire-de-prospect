@@ -1,5 +1,6 @@
 "use client"
 
+import { parseISO, isPast, isToday } from "date-fns"
 import {
     Building2,
     FileText,
@@ -57,17 +58,17 @@ export default function DashboardPage() {
         .filter((app): app is NonNullable<typeof app> => app != null)
 
     // Relances en retard : dateRelaunch strictement avant aujourd'hui
+    // (même logique que UpcomingRelaunches/ApplicationRow/BusinessDetail : isPast && !isToday)
     const overdue = allApplications.filter((app) => {
-        const relaunchDate = new Date(app.dateRelaunch)
-        relaunchDate.setHours(0, 0, 0, 0)
-        return relaunchDate < today
+        if (!app.dateRelaunch) return false
+        const relaunchDate = parseISO(app.dateRelaunch)
+        return isPast(relaunchDate) && !isToday(relaunchDate)
     })
 
     // Relances prévues aujourd'hui
     const todayRelaunches = allApplications.filter((app) => {
-        const relaunchDate = new Date(app.dateRelaunch)
-        relaunchDate.setHours(0, 0, 0, 0)
-        return relaunchDate.getTime() === today.getTime()
+        if (!app.dateRelaunch) return false
+        return isToday(parseISO(app.dateRelaunch))
     })
 
     // À relancer = aujourd'hui + en retard

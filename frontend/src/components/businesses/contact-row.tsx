@@ -45,6 +45,7 @@ export function ContactRow({ pro, onDelete }: ContactRowProps) {
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="ghost" />}>
                 <Pencil className="h-4 w-4" />
+                <span className="sr-only">Actions sur le contact</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuGroup>

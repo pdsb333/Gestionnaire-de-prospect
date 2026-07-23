@@ -264,6 +264,29 @@ class JobOfferServiceImplTest {
         }
 
         @Test
+        @DisplayName("Should base the recomputed dateRelaunch on the last recorded relaunch, not initialApplicationDate")
+        void update_WhenRelaunchFrequencyChanges_DoesNotRewindPastAlreadyRecordedRelaunch() {
+            // Given
+            JobOffer existingJobOffer = createJobOffer(1L, "Dev Java", "https://example.com", 7, testBusiness);
+            LocalDateTime initialApplicationDate = LocalDateTime.of(2024, 1, 1, 10, 0);
+            Application application = new Application(initialApplicationDate, initialApplicationDate.plusDays(7), existingJobOffer);
+            LocalDateTime laterRelaunch = initialApplicationDate.plusDays(30);
+            application.addRelaunch(laterRelaunch);
+            existingJobOffer.setApplication(application);
+
+            JobOfferRequest updateRequest = createJobOfferRequest("Dev Java", "https://example.com", 14);
+
+            when(jobOfferRepository.findByIdAndBusiness_UserId(1L, testUser.getId()))
+                .thenReturn(Optional.of(existingJobOffer));
+
+            // When
+            jobOfferService.updateJobOffer(updateRequest, 1L, testUser);
+
+            // Then - based on the later relaunch already recorded, not the original application date
+            assertThat(application.getDateRelaunch()).isEqualTo(laterRelaunch.plusDays(14));
+        }
+
+        @Test
         @DisplayName("Should not fail when the JobOffer has no linked Application")
         void update_WhenNoLinkedApplication_DoesNotFail() {
             // Given

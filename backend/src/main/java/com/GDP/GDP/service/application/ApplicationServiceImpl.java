@@ -40,6 +40,12 @@ public class ApplicationServiceImpl implements ApplicationService{
         }
     }
 
+    private LocalDateTime lastRelaunch(Application application) {
+        return application.getHistoryOfRelaunches().stream()
+                .max(LocalDateTime::compareTo)
+                .orElse(application.getInitialApplicationDate());
+    }
+
     private Application verifyApplication(Long id, User user){
         return applicationRepository.findByIdAndOffer_Business_UserId(id, user.getId())
                                 .orElseThrow(()-> new ResourceNotFoundException("Application", id));
@@ -90,9 +96,11 @@ public class ApplicationServiceImpl implements ApplicationService{
             application.addRelaunch(newInitialDate);
         }
 
-        // dateRelaunch is always derived from initialApplicationDate + relaunchFrequency, same as
-        // create() — never trust a client-supplied relaunch date.
-        application.setDateRelaunch(computeRelaunch(newInitialDate, application.getOffer().getRelaunchFrequency()));
+        // dateRelaunch is derived from the most recent relaunch actually recorded (never a
+        // client-supplied value): falling back to initialApplicationDate only when no relaunch
+        // has happened yet, so editing an application no longer rewinds progress already made
+        // via markRelaunched.
+        application.setDateRelaunch(computeRelaunch(lastRelaunch(application), application.getOffer().getRelaunchFrequency()));
 
         return ApplicationResponse.fromEntity(application);
     }

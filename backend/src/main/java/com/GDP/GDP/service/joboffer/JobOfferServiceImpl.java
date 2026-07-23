@@ -1,5 +1,7 @@
 package com.GDP.GDP.service.joboffer;
 
+import java.time.LocalDateTime;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -56,9 +58,14 @@ public class JobOfferServiceImpl implements JobOfferService {
         // No <1 fallback needed here (unlike ApplicationServiceImpl.computeRelaunch, which
         // operates on the persisted JobOffer's possibly-stale value): relaunchFrequency comes
         // straight from a freshly @Min(1)-validated JobOfferRequest.
+        // Based on the most recent relaunch actually recorded, not initialApplicationDate,
+        // so changing the cadence doesn't rewind progress already made via markRelaunched.
         Application application = jobOffer.getApplication();
         if (application != null) {
-            application.setDateRelaunch(application.getInitialApplicationDate().plusDays(request.relaunchFrequency()));
+            LocalDateTime lastRelaunch = application.getHistoryOfRelaunches().stream()
+                    .max(LocalDateTime::compareTo)
+                    .orElse(application.getInitialApplicationDate());
+            application.setDateRelaunch(lastRelaunch.plusDays(request.relaunchFrequency()));
         }
 
         return JobOfferResponse.fromEntity(jobOffer);

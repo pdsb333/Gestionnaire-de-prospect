@@ -345,6 +345,25 @@ class ApplicationServiceImplTest {
             assertThatThrownBy(() -> applicationService.update(request, 1L, user))
                 .isInstanceOf(FutureDateException.class);
         }
+
+        @Test
+        @DisplayName("should not rewind dateRelaunch to before a relaunch already recorded via markRelaunched")
+        void shouldNotRewindDateRelaunchPastAlreadyRecordedRelaunch() {
+            // application already had a relaunch recorded well after the initial date
+            LocalDateTime laterRelaunch = initialDate.plusDays(30);
+            application.addRelaunch(laterRelaunch);
+            application.setDateRelaunch(laterRelaunch.plusDays(7));
+
+            // editing the application without touching initialApplicationDate must not reset
+            // dateRelaunch back to initialDate + 7 (a date already in the past)
+            ApplicationRequest request = new ApplicationRequest(initialDate);
+            when(applicationRepository.findByIdAndOffer_Business_UserId(1L, user.getId()))
+                .thenReturn(Optional.of(application));
+
+            ApplicationResponse response = applicationService.update(request, 1L, user);
+
+            assertThat(response.dateRelaunch()).isEqualTo(laterRelaunch.plusDays(7));
+        }
     }
     /* ---------------------------------------------------------
         TESTS DELETE APPLICATION

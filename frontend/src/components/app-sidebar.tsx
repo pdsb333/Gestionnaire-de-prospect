@@ -1,13 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   Building2,
   FileText,
   Contact,
   Briefcase,
+  LogOut,
 } from "lucide-react"
 import {
   Sidebar,
@@ -21,6 +22,8 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import { useGDP } from "@/lib/store"
 
 const navItems = [
   { title: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
@@ -31,6 +34,16 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { logout } = useGDP()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } finally {
+      router.push("/connexion")
+    }
+  }
 
   return (
     <Sidebar>
@@ -76,7 +89,14 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="border-t border-border px-6 py-4">
-
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 text-muted-foreground"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4" />
+          Déconnexion
+        </Button>
       </SidebarFooter>
     </Sidebar>
   )

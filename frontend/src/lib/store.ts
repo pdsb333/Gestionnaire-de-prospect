@@ -9,6 +9,7 @@ export interface GDPStore {
     error: string | null
     login: (credentials: Omit<Auth, "pseudo">) => Promise<void>
     register: (data: Auth) => Promise<void>
+    logout: () => Promise<void>
     addBusiness: (b: Omit<Business, "id" | "jobOffersList" | "professionalsList">) => Promise<void>
     deleteBusiness: (id:number) => Promise<void>
     updateBusiness:(id:number, data: Partial<Business>) => Promise<void>

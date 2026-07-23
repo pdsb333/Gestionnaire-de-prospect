@@ -48,6 +48,13 @@ class ApiClient {
     return response
   }
 
+  async logout(): Promise<{ message: string }> {
+    const response = await this.request<{ message: string }>("/api/auth/logout", {
+      method: "POST",
+    })
+    return response
+  }
+
   // ============ BUSINESSES ============
   async getBusinesses(): Promise<Business[]> {
     return this.request<Business[]>("/api/business/get")

@@ -85,6 +85,24 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     [fetchBusinesses]
   )
 
+  const logout = useCallback(
+    async () => {
+        if (!apiClient.isConfigured()) {
+            throw new Error("API not configured")
+        }
+        try {
+            setError(null)
+            await apiClient.logout()
+            setBusinesses([])
+        } catch (err) {
+            console.error("Logout failed:", err)
+            setError(err instanceof Error ? err.message : "Logout failed")
+            throw err
+        }
+    },
+    []
+  )
+
   const register = useCallback(
     async (data: Auth) => {
         if (!apiClient.isConfigured()) {
@@ -279,6 +297,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     error,
     login,
     register,
+    logout,
     addBusiness,
     deleteBusiness,
     updateBusiness,

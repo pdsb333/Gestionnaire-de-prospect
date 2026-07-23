@@ -22,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.GDP.GDP.security.AuthRateLimitingFilter;
 import com.GDP.GDP.security.JwtAuthenticationFilter;
 import com.GDP.GDP.service.CustomUserDetailsService;
 
@@ -30,12 +31,18 @@ import com.GDP.GDP.service.CustomUserDetailsService;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final AuthRateLimitingFilter authRateLimitingFilter;
     private final CustomUserDetailsService userDetailsService;
     @Value("${url.front}")
     private String urlFront;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthFilter,
+            AuthRateLimitingFilter authRateLimitingFilter,
+            CustomUserDetailsService userDetailsService
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.authRateLimitingFilter = authRateLimitingFilter;
         this.userDetailsService = userDetailsService;
     }
 
@@ -65,6 +72,7 @@ public class SecurityConfig {
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(authRateLimitingFilter, JwtAuthenticationFilter.class)
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException)->{
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());

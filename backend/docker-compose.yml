@@ -1,20 +1,22 @@
 services:
-  db:
-    image: postgres:15
-    container_name: postgres_dev
-    environment:
-      POSTGRES_USER: utilisateur
-      POSTGRES_PASSWORD: motdepasse
-      POSTGRES_DB: nom_de_la_base
+#  db:
+#    image: postgres:15
+#    restart: unless-stopped
+#    environment:
+#      POSTGRES_USER: utilisateur
+#      POSTGRES_PASSWORD: motdepasse
+#      POSTGRES_DB: nom_de_la_base
+#    ports:
+#      - 5432:5432
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
     ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - dev-network
-
-networks:
-  dev-network:
-
-volumes:
-  pgdata:
+      - 8080:8080
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}

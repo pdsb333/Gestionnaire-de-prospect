@@ -2,11 +2,14 @@ package com.GDP.GDP.controller;
 
 import java.time.Duration; 
 
-import org.springframework.beans.factory.annotation.Value; 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders; 
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.GDP.GDP.dto.auth.LoginRequest;
 import com.GDP.GDP.dto.auth.RegisterRequest;
@@ -22,10 +25,10 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @Value("${app.auth.cookie.secure:false}")
+    @Value("${app.auth.cookie.secure:true}")
     private boolean secureCookie;
 
-    @Value("${app.auth.cookie.same-site:Lax}")
+    @Value("${app.auth.cookie.same-site:None}")
     private String sameSite;
 
     // Kept equal to jwt.expiration (see JwtService) so the cookie never outlives the token it

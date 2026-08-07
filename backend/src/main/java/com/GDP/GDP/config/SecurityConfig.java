@@ -66,7 +66,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))    
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/health").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

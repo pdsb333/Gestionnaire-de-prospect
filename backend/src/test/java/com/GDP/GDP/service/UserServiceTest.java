@@ -1,5 +1,6 @@
 package com.GDP.GDP.service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,7 @@ import com.GDP.GDP.dto.user.UserUpdateRequest;
 import com.GDP.GDP.entity.User;
 import com.GDP.GDP.exception.EmailAlreadyExistsException;
 import com.GDP.GDP.exception.InvalidCredentialsException;
+import com.GDP.GDP.repository.BusinessRepository;
 import com.GDP.GDP.repository.UserRepository;
 import com.GDP.GDP.service.user.ProfileUpdateResult;
 import com.GDP.GDP.service.user.UserServiceImpl;
@@ -34,6 +36,9 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private BusinessRepository businessRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -196,14 +201,50 @@ class UserServiceTest {
     class DeleteAccountTests {
 
         @Test
-        @DisplayName("Should delete the user when current password matches")
+        @DisplayName("Should delete a freshly-refetched, managed user when current password matches")
         void shouldDeleteAccountWhenCurrentPasswordMatches() {
             when(passwordEncoder.matches("currentPass", "hashedPassword")).thenReturn(true);
+            when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
             UserDeleteRequest request = new UserDeleteRequest("currentPass");
 
             userService.deleteAccount(currentUser, request);
 
             verify(userRepository).delete(currentUser);
+        }
+
+        @Test
+        @DisplayName("Should re-fetch the user by id instead of deleting the (possibly detached) argument directly")
+        void shouldRefetchManagedUserBeforeDeleting() {
+            // Regression test: `user` here (like in production) is loaded by the JWT filter in its
+            // own short-lived transaction, so it's detached by the time it reaches this method.
+            // Deleting it directly went through EntityManager.merge() inside JpaRepository.delete(),
+            // which didn't reliably cascade to businesses added after `user` was originally loaded —
+            // confirmed via CI as `delete from users` firing with no `delete from businesses`
+            // before it, aborting on the FK (409 DataIntegrityViolationException in production).
+            // Re-fetching by id gives Hibernate a genuinely managed entity to cascade from.
+            User managedUser = new User("userA", "userA@mail.com", "hashedPassword", User.Role.ROLE_USER);
+            managedUser.setId(userId);
+            when(passwordEncoder.matches("currentPass", "hashedPassword")).thenReturn(true);
+            when(userRepository.findById(userId)).thenReturn(Optional.of(managedUser));
+            UserDeleteRequest request = new UserDeleteRequest("currentPass");
+
+            userService.deleteAccount(currentUser, request);
+
+            verify(userRepository).delete(managedUser);
+            verify(userRepository, never()).delete(currentUser);
+        }
+
+        @Test
+        @DisplayName("Should prime the persistence context with job offers and professionals before deleting")
+        void shouldPrimePersistenceContextBeforeDeleting() {
+            when(passwordEncoder.matches("currentPass", "hashedPassword")).thenReturn(true);
+            when(userRepository.findById(userId)).thenReturn(Optional.of(currentUser));
+            UserDeleteRequest request = new UserDeleteRequest("currentPass");
+
+            userService.deleteAccount(currentUser, request);
+
+            verify(businessRepository).findByUserIdWithJobOffers(userId);
+            verify(businessRepository).findByUserIdWithProfessionals(userId);
         }
 
         @Test

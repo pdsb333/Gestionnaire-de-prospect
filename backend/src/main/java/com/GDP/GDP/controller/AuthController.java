@@ -1,10 +1,6 @@
 package com.GDP.GDP.controller;
 
-import java.time.Duration; 
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders; 
-import org.springframework.http.ResponseCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.GDP.GDP.dto.auth.LoginRequest;
 import com.GDP.GDP.dto.auth.RegisterRequest;
+import com.GDP.GDP.security.TokenCookieFactory;
 import com.GDP.GDP.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -21,23 +18,12 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private static final String TOKEN_COOKIE_NAME = "token";
-
     private final AuthService authService;
+    private final TokenCookieFactory tokenCookieFactory;
 
-    @Value("${app.auth.cookie.secure:true}")
-    private boolean secureCookie;
-
-    @Value("${app.auth.cookie.same-site:None}")
-    private String sameSite;
-
-    // Kept equal to jwt.expiration (see JwtService) so the cookie never outlives the token it
-    // carries: a longer-lived cookie would keep resending an already-expired JWT for no benefit.
-    @Value("${jwt.expiration}")
-    private long jwtExpirationMs;
-
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, TokenCookieFactory tokenCookieFactory) {
         this.authService = authService;
+        this.tokenCookieFactory = tokenCookieFactory;
     }
 
     @PostMapping("/register")
@@ -51,7 +37,7 @@ public class AuthController {
 
         return ResponseEntity
                 .status(201)
-                .header(HttpHeaders.SET_COOKIE, buildTokenCookie(token, Duration.ofMillis(jwtExpirationMs)).toString())
+                .header(HttpHeaders.SET_COOKIE, tokenCookieFactory.buildTokenCookie(token).toString())
                 .build();
     }
 
@@ -65,7 +51,7 @@ public class AuthController {
 
         return ResponseEntity
                 .noContent()
-                .header(HttpHeaders.SET_COOKIE, buildTokenCookie(token, Duration.ofMillis(jwtExpirationMs)).toString())
+                .header(HttpHeaders.SET_COOKIE, tokenCookieFactory.buildTokenCookie(token).toString())
                 .build();
     }
 
@@ -74,29 +60,7 @@ public class AuthController {
 
         return ResponseEntity
                 .noContent()
-                .header(HttpHeaders.SET_COOKIE, deleteTokenCookie().toString())
-                .build();
-    }
-
-    private ResponseCookie buildTokenCookie(String token, Duration duration) {
-
-        return ResponseCookie.from(TOKEN_COOKIE_NAME, token)
-                .httpOnly(true)
-                .secure(secureCookie)
-                .sameSite(sameSite)
-                .path("/")
-                .maxAge(duration)
-                .build();
-    }
-
-    private ResponseCookie deleteTokenCookie() {
-
-        return ResponseCookie.from(TOKEN_COOKIE_NAME, "")
-                .httpOnly(true)
-                .secure(secureCookie)
-                .sameSite(sameSite)
-                .path("/")
-                .maxAge(Duration.ZERO)
+                .header(HttpHeaders.SET_COOKIE, tokenCookieFactory.deleteTokenCookie().toString())
                 .build();
     }
 }

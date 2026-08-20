@@ -4,6 +4,13 @@ export interface Auth {
   password: string
 }
 
+export interface UserProfile {
+  id: string
+  pseudo: string
+  email: string
+  role: "ROLE_USER" | "ROLE_ADMIN"
+}
+
 export interface Business {
   id: number;
   name: string;

@@ -39,5 +39,6 @@ export const config = {
         "/businesses/:path*",
         "/contacts/:path*",
         "/relaunches/:path*",
+        "/compte/:path*",
     ],
 };

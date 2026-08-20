@@ -1,4 +1,4 @@
-import type { Application, Auth, Business, JobOffer, Professional } from "@/lib/types"
+import type { Application, Auth, Business, JobOffer, Professional, UserProfile } from "@/lib/types"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ""
 
@@ -155,6 +155,36 @@ class ApiClient {
   async deleteProfessional(id: number): Promise<void> {
     return this.request<void>(`/api/professional/delete/${id}`, {
       method: "DELETE",
+    })
+  }
+
+  // ============ USER ============
+  async getCurrentUser(): Promise<UserProfile> {
+    return this.request<UserProfile>("/api/user/get")
+  }
+
+  async updateProfile(
+    data: { pseudo: string; email: string; currentPassword: string }
+  ): Promise<UserProfile> {
+    return this.request<UserProfile>("/api/user/put", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
+  async updatePassword(
+    data: { currentPassword: string; newPassword: string }
+  ): Promise<void> {
+    return this.request<void>("/api/user/put/password", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteAccount(data: { currentPassword: string }): Promise<void> {
+    return this.request<void>("/api/user/delete", {
+      method: "DELETE",
+      body: JSON.stringify(data),
     })
   }
 

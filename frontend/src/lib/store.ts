@@ -1,15 +1,20 @@
 "use client"
 
 import { createContext, useContext } from "react"
-import type {  Auth, Business, JobOffer, Application, Professional } from "./types"
+import type {  Auth, Business, JobOffer, Application, Professional, UserProfile } from "./types"
 
 export interface GDPStore {
     businesses: Business[]
+    user: UserProfile | null
     loading: boolean
     error: string | null
     login: (credentials: Omit<Auth, "pseudo">) => Promise<void>
     register: (data: Auth) => Promise<void>
     logout: () => Promise<void>
+    fetchUser: () => Promise<void>
+    updateProfile: (data: { pseudo: string; email: string; currentPassword: string }) => Promise<void>
+    updatePassword: (data: { currentPassword: string; newPassword: string }) => Promise<void>
+    deleteAccount: (data: { currentPassword: string }) => Promise<void>
     addBusiness: (b: Omit<Business, "id" | "jobOffersList" | "professionalsList">) => Promise<void>
     deleteBusiness: (id:number) => Promise<void>
     updateBusiness:(id:number, data: Partial<Business>) => Promise<void>

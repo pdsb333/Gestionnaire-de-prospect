@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { GDPContext, type GDPStore } from "@/lib/store"
 import { apiClient } from "@/lib/api-client"
 import { isProtectedRoute } from "@/lib/routes"
-import { Application, Business, JobOffer, Professional, type Auth } from "@/lib/types"
+import { Application, Business, JobOffer, Professional, type Auth, type UserProfile } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
 
@@ -41,6 +41,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [isConfigured, setIsConfigured] = useState(() => apiClient.isConfigured())
   const [businesses, setBusinesses] = useState<Business[]>([])
+  const [user, setUser] = useState<UserProfile | null>(null)
   const fetchBusinesses = useCallback(async () => {
     if (!apiClient.isConfigured()) {
       setIsConfigured(false)
@@ -60,6 +61,20 @@ export function GDPProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const fetchUser = useCallback(async () => {
+    if (!apiClient.isConfigured()) {
+      setIsConfigured(false)
+      return
+    }
+    try {
+      const data = await apiClient.getCurrentUser()
+      setUser(data)
+    } catch (err) {
+      console.error("Failed to fetch current user:", err)
+      setError(err instanceof Error ? err.message : "Failed to load user")
+    }
+  }, [])
+
   useEffect(() => {
     // GDPProvider wraps the whole app (public pages included), so without this guard the
     // initial fetch would always fire — and always fail unauthenticated — on /connexion,
@@ -72,8 +87,9 @@ export function GDPProvider({ children }: { children: ReactNode }) {
       return
     }
     fetchBusinesses()
+    fetchUser()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchBusinesses])
+  }, [fetchBusinesses, fetchUser])
 
   const login = useCallback(
     async (credentials: Omit<Auth, "pseudo">) => {
@@ -88,6 +104,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
             // effect-driven fetch already ran (and failed, unauthenticated) before this login —
             // refetch now that a session cookie exists.
             await fetchBusinesses()
+            await fetchUser()
         } catch (err) {
             console.error("Login failed:", err)
             setError(err instanceof Error ? err.message : "Login failed")
@@ -96,7 +113,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
             setLoading(false)
         }
     },
-    [fetchBusinesses]
+    [fetchBusinesses, fetchUser]
   )
 
   const logout = useCallback(
@@ -108,6 +125,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
             setError(null)
             await apiClient.logout()
             setBusinesses([])
+            setUser(null)
         } catch (err) {
             console.error("Logout failed:", err)
             setError(err instanceof Error ? err.message : "Logout failed")
@@ -127,6 +145,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
             setLoading(true)
             await apiClient.register(data)
             await fetchBusinesses()
+            await fetchUser()
         } catch (err) {
             console.error("Register failed:", err)
             setError(err instanceof Error ? err.message : "Register failed")
@@ -135,7 +154,7 @@ export function GDPProvider({ children }: { children: ReactNode }) {
             setLoading(false)
         }
     },
-    [fetchBusinesses]
+    [fetchBusinesses, fetchUser]
   )
 
   // Business mutation
@@ -305,13 +324,58 @@ export function GDPProvider({ children }: { children: ReactNode }) {
   )
 
 
+  //User mutations
+  const updateProfile = useCallback(
+    async (data: { pseudo: string; email: string; currentPassword: string }) => {
+      try {
+        await apiClient.updateProfile(data)
+        await fetchUser()
+      } catch (err) {
+        console.error("Failed to update profile:", err)
+        throw err
+      }
+    },
+    [fetchUser]
+  )
+
+  const updatePassword = useCallback(
+    async (data: { currentPassword: string; newPassword: string }) => {
+      try {
+        await apiClient.updatePassword(data)
+      } catch (err) {
+        console.error("Failed to update password:", err)
+        throw err
+      }
+    },
+    []
+  )
+
+  const deleteAccount = useCallback(
+    async (data: { currentPassword: string }) => {
+      try {
+        await apiClient.deleteAccount(data)
+        setUser(null)
+        setBusinesses([])
+      } catch (err) {
+        console.error("Failed to delete account:", err)
+        throw err
+      }
+    },
+    []
+  )
+
   const store: GDPStore = {
     businesses,
+    user,
     loading,
     error,
     login,
     register,
     logout,
+    fetchUser,
+    updateProfile,
+    updatePassword,
+    deleteAccount,
     addBusiness,
     deleteBusiness,
     updateBusiness,

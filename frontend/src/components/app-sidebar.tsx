@@ -9,6 +9,7 @@ import {
   Contact,
   Briefcase,
   LogOut,
+  User,
 } from "lucide-react"
 import {
   Sidebar,
@@ -88,7 +89,15 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-border px-6 py-4">
+      <SidebarFooter className="border-t border-border px-6 py-4 gap-1">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 text-muted-foreground"
+          render={<Link href="/compte" />}
+        >
+          <User className="h-4 w-4" />
+          Mon compte
+        </Button>
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 text-muted-foreground"

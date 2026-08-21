@@ -11,6 +11,7 @@ import {
     CircleAlert,
 } from "lucide-react"
 import { useGDP } from "@/lib/store"
+import { AppBreadcrumb } from "@/components/app-breadcrumb"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { UpcomingRelaunches } from "@/components/dashboard/upcoming-relaunches"
 import { RecentApplications } from "@/components/dashboard/recent-applications"
@@ -89,6 +90,7 @@ export default function DashboardPage() {
     return (
         <div className="flex flex-col gap-8 p-6 lg:p-8">
             <div>
+                <AppBreadcrumb items={[{ label: "Tableau de bord" }]} />
                 <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
                 <p className="text-sm text-muted-foreground mt-1">
                     Vue d{"'"}ensemble de votre recherche d{"'"}emploi

@@ -9,6 +9,7 @@ import { Card, CardContent, CardAction } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useGDP } from "@/lib/store"
 import { isSafeHttpUrl } from "@/lib/utils"
+import { AppBreadcrumb } from "@/components/app-breadcrumb"
 import { ApplicationRow } from "./application-row"
 import { useRouter } from "next/navigation"
 import { EditBusinessDialog } from "./edit-business-dialog"
@@ -76,6 +77,12 @@ export function BusinessDetail({ businessId }: { businessId: number }) {
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       {/* Header */}
       <div className="flex flex-col gap-4">
+        <AppBreadcrumb
+          items={[
+            { label: "Entreprises", href: "/businesses" },
+            { label: business.name },
+          ]}
+        />
         <Button variant="ghost" size="sm" className="w-fit -ml-2 text-muted-foreground" render={<Link href="/businesses" />}>
           <ArrowLeft className="mr-1 h-4 w-4" />
           Entreprises

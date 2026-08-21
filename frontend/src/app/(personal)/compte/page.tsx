@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useGDP } from "@/lib/store"
+import { AppBreadcrumb } from "@/components/app-breadcrumb"
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -272,6 +273,7 @@ export default function ComptePage() {
     return (
         <div className="flex flex-col gap-8 p-6 lg:p-8">
             <div>
+                <AppBreadcrumb items={[{ label: "Mon compte" }]} />
                 <h1 className="text-2xl font-bold tracking-tight">Mon compte</h1>
                 <p className="text-sm text-muted-foreground mt-1">
                     Gérez vos informations personnelles et la sécurité de votre compte

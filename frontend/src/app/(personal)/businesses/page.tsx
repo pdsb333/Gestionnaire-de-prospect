@@ -6,6 +6,7 @@ import { Building2, ChevronRight, FileText, Users, Briefcase } from "lucide-reac
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useGDP } from "@/lib/store"
+import { AppBreadcrumb } from "@/components/app-breadcrumb"
 import { AddBusinessDialog } from "@/components/businesses/add-business-dialog"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -17,6 +18,7 @@ export default function BusinessesPage() {
     <div className="flex flex-col gap-8 p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div>
+          <AppBreadcrumb items={[{ label: "Entreprises" }]} />
           <h1 className="text-2xl font-bold tracking-tight">Entreprises</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {businesses.length} entreprise{businesses.length !== 1 ? "s" : ""} suivie{businesses.length !== 1 ? "s" : ""}

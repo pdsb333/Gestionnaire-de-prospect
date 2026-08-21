@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useGDP } from "@/lib/store"
+import { AppBreadcrumb } from "@/components/app-breadcrumb"
 import { ContactRow } from "@/components/businesses/contact-row"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -39,6 +40,7 @@ export default function ContactsPage() {
     return (
         <div className="p-6 space-y-6">
             <div>
+                <AppBreadcrumb items={[{ label: "Contacts" }]} />
                 <h1 className="text-2xl font-bold">Contacts</h1>
                 <p className="text-muted-foreground flex items-center gap-1 mt-1">
                     <Users className="w-4 h-4" />

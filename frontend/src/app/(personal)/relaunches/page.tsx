@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useGDP } from "@/lib/store"
+import { AppBreadcrumb } from "@/components/app-breadcrumb"
 import { cn } from "@/lib/utils"
 import type { JobOffer, Application } from "@/lib/types"
 
@@ -178,6 +179,7 @@ export default function RelaunchesPage() {
     <div className="flex flex-col gap-8 p-6 lg:p-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
+          <AppBreadcrumb items={[{ label: "Relances" }]} />
           <h1 className="text-2xl font-bold tracking-tight">Relances</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Gerez vos relances et suivez l{"'"}avancement de vos candidatures

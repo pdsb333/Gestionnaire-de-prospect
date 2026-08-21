@@ -13,7 +13,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-14 items-center gap-2 border-b border-border px-6">
+        <header className="flex h-10 items-center gap-2 border-b border-border px-6">
           <SidebarTrigger className="-ml-2" />
           <Separator orientation="vertical" className="mr-2 !h-4" />
           <span className="text-sm text-muted-foreground font-medium">Gestion De Prospection</span>

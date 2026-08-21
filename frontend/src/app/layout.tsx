@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GDP — Gestionnaire de Prospect",
+  title: "Relanza",
   description: "Suivez vos candidatures, offres d'emploi et contacts professionnels.",
 };
 

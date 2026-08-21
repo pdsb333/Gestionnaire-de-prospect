@@ -44,8 +44,9 @@ export default function Page() {
             <span className="text-chart-2">recherche d'emploi</span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-lg text-chart-1 sm:text-xl">
-            Centralisez vos candidatures, suivez vos relances et sachez
-            exactement où vous en êtes <span className="text-chart-0"> sans tableurs, sans oublis. </span>
+            Centralisez vos candidatures, suivez chaque opportunité et ne manquez plus
+            aucune relance. <span className="text-chart-0">Sans tableurs, sans oublis.</span>{" "}
+            Avec Relanza, votre recherche d'emploi reste organisée et sous contrôle.
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Button
@@ -234,7 +235,7 @@ export default function Page() {
 
       {/* ── FOOTER ── */}
       <footer className="bg-secondary-foreground py-8 text-center text-sm text-muted">
-        © {new Date().getFullYear()} JobTracker. Tous droits réservés.
+        © {new Date().getFullYear()} Relanza. Tous droits réservés.
       </footer>
     </div>
   );

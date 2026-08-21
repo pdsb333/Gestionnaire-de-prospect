@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Relanza",
-  description: "Suivez vos candidatures, offres d'emploi et contacts professionnels.",
+  description: "Relanza est une application de gestion de candidatures qui permet de centraliser vos offres d'emploi, suivre vos candidatures, organiser vos relances et ne manquer aucune opportunité.",
 };
 
 export default function RootLayout({

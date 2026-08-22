@@ -7,7 +7,6 @@ import {
   Building2,
   FileText,
   Contact,
-  Briefcase,
   LogOut,
   User,
 } from "lucide-react"
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { useGDP } from "@/lib/store"
+import Image from "next/image"
 
 const navItems = [
   { title: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
@@ -48,15 +48,9 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b border-border px-6 py-5">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-foreground">
-            <Briefcase className="h-4 w-4 text-background" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold tracking-tight text-foreground">Relan<span className="text-md">z</span>a</p>
-            <p className="text-xs text-muted-foreground">Ma recherche d'emploie</p>
-          </div>
+      <SidebarHeader className="border-b border-border px-6 py-5 flex items-center justify-center">
+        <Link href="/dashboard" className="flex items-center">
+          <Image src="/relanza.svg" alt="Logo" className="h-8 w-24"  width={24} height={82}/>
         </Link>
       </SidebarHeader>
       <SidebarContent>

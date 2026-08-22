@@ -16,7 +16,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <header className="flex h-10 items-center gap-2 border-b border-border px-6">
           <SidebarTrigger className="-ml-2" />
           <Separator orientation="vertical" className="mr-2 !h-4" />
-          <span className="text-sm text-muted-foreground font-medium">Gestion De Prospection</span>
         </header>
         <main className="flex-1 overflow-x-hidden">
           <GlobalStatusBanner />

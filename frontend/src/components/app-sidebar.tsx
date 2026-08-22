@@ -54,8 +54,8 @@ export function AppSidebar() {
             <Briefcase className="h-4 w-4 text-background" />
           </div>
           <div>
-            <p className="text-sm font-semibold tracking-tight text-foreground">Relanza</p>
-            <p className="text-xs text-muted-foreground">Gestion De Prospection</p>
+            <p className="text-sm font-semibold tracking-tight text-foreground">Relan<span className="text-md">z</span>a</p>
+            <p className="text-xs text-muted-foreground">Ma recherche d'emploie</p>
           </div>
         </Link>
       </SidebarHeader>
